@@ -103,11 +103,13 @@
             <stay wp="STDBY"/>
         </block>
         <block name="FlyLine" strip_button="Fly a straight line">
-            <for var="i" from="0" to="3">
                 <go wp="North" />
                 <go wp="South" />
-                <while cond="5 > stage_time"/>
-            </for>
+                <stay wp="South"/>
+        </block>
+        <block name="Scan" strip_button="Scan">
+            <call_once fun="NavSetWaypointHere(WP_STDBY)"/>
+            <stay wp="WP_STDBY"/>
         </block>
 <!--        <block key="g" name="START" strip_button="Go" strip_icon="lookfore.png">
             <call_once fun="NavSetWaypointHere(WP_GOAL)"/>
