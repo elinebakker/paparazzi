@@ -14,9 +14,9 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "firmwares/rotorcraft/navigation.h"
+//#include "firmwares/rotorcraft/navigation.h"
 
-#include "generated/flight_plan.h"
+//#include "generated/flight_plan.h"
 #include "modules/computer_vision/colorfilter.h"
 #include "modules/orange_avoider/orange_avoider.h"
 
@@ -29,11 +29,11 @@
 #define VERBOSE_PRINT(...)
 #endif
 
-uint8_t safeToGoForwards        = false;
+uint8_t orange_avoider_safeToGoForwards        = false;
 int tresholdColorCount          = 0.05 * 124800; // 520 x 240 = 124.800 total pixels
-float incrementForAvoidance;
+/*float incrementForAvoidance;
 uint16_t trajectoryConfidence   = 1;
-float maxDistance               = 2.25;
+float maxDistance               = 2.25;*/
 
 /*
  * Initialisation function, setting the colour filter, random seed and incrementForAvoidance
@@ -49,14 +49,22 @@ void orange_avoider_init()
   color_cr_max  = 255;
   // Initialise random values
   srand(time(NULL));
-  chooseRandomIncrementAvoidance();
+//  chooseRandomIncrementAvoidance();
+}
+
+bool checkIfSafeToGoForwards(){
+    orange_avoider_safeToGoForwards = color_count < tresholdColorCount;
+    return orange_avoider_safeToGoForwards;
 }
 
 /*
  * Function that checks it is safe to move forwards, and then moves a waypoint forward or changes the heading
  */
-void orange_avoider_periodic()
-{
+
+void orange_avoider_periodic() {
+    return;
+}
+/*
   // Check the amount of orange. If this is above a threshold
   // you want to turn a certain amount of degrees
   safeToGoForwards = color_count < tresholdColorCount;
@@ -83,9 +91,11 @@ void orange_avoider_periodic()
   return;
 }
 
+*/
 /*
  * Increases the NAV heading. Assumes heading is an INT32_ANGLE. It is bound in this function.
- */
+ *//*
+
 uint8_t increase_nav_heading(int32_t *heading, float incrementDegrees)
 {
   struct Int32Eulers *eulerAngles   = stateGetNedToBodyEulers_i();
@@ -97,9 +107,11 @@ uint8_t increase_nav_heading(int32_t *heading, float incrementDegrees)
   return false;
 }
 
+*/
 /*
  * Calculates coordinates of a distance of 'distanceMeters' forward w.r.t. current position and heading
- */
+ *//*
+
 uint8_t calculateForwards(struct EnuCoor_i *new_coor, float distanceMeters)
 {
   struct EnuCoor_i *pos             = stateGetPositionEnu_i(); // Get your current position
@@ -114,9 +126,11 @@ uint8_t calculateForwards(struct EnuCoor_i *new_coor, float distanceMeters)
   return false;
 }
 
+*/
 /*
  * Sets waypoint 'waypoint' to the coordinates of 'new_coor'
- */
+ *//*
+
 uint8_t moveWaypoint(uint8_t waypoint, struct EnuCoor_i *new_coor)
 {
   VERBOSE_PRINT("Moving waypoint %d to x:%f y:%f\n", waypoint, POS_FLOAT_OF_BFP(new_coor->x), POS_FLOAT_OF_BFP(new_coor->y));
@@ -124,9 +138,11 @@ uint8_t moveWaypoint(uint8_t waypoint, struct EnuCoor_i *new_coor)
   return false;
 }
 
+*/
 /*
  * Calculates coordinates of distance forward and sets waypoint 'waypoint' to those coordinates
- */
+ *//*
+
 uint8_t moveWaypointForward(uint8_t waypoint, float distanceMeters)
 {
   struct EnuCoor_i new_coor;
@@ -135,9 +151,11 @@ uint8_t moveWaypointForward(uint8_t waypoint, float distanceMeters)
   return false;
 }
 
+*/
 /*
  * Sets the variable 'incrementForAvoidance' randomly positive/negative
- */
+ *//*
+
 uint8_t chooseRandomIncrementAvoidance()
 {
   // Randomly choose CW or CCW avoiding direction
@@ -151,4 +169,5 @@ uint8_t chooseRandomIncrementAvoidance()
   }
   return false;
 }
+*/
 
