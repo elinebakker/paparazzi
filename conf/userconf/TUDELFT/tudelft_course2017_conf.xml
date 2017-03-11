@@ -2,7 +2,7 @@
   <aircraft
    name="bebop_avoid"
    ac_id="42"
-   airframe="airframes/TUDELFT/tudelft_course2017_bebop1_avoider.xml"
+   airframe="airframes/TUDELFT/tudelft_course2017_bebop1_group02.xml"
    radio="radios/dummy.xml"
    telemetry="telemetry/default_rotorcraft.xml"
    flight_plan="flight_plans/TUDELFT/tudelft_course_2017_group02.xml"

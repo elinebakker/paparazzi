@@ -74,6 +74,7 @@
       !(IndexOfBlock('Holding point') > nav_block) &&
       !(nav_block >= IndexOfBlock('Land here')) &&
       (autopilot_in_flight == true) )" deroute="Land here"/>
+
     </exceptions>
     <blocks>
         <block name="Wait GPS">
@@ -89,7 +90,7 @@
             <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
         </block>
         <block key="r" name="Start Engine">
-            <call_once fun="NavResurrect()"/>
+            <call_once fun="NavResurrect()" />
             <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
             <call_once fun="NavResurrect()"/>
         </block>
@@ -108,10 +109,10 @@
                 <stay wp="South"/>
         </block>
         <block name="Scan" strip_button="Scan">
-            <call_once fun="NavSetWaypointHere(WP_STDBY)"/>
-            <stay wp="WP_STDBY"/>
+            <call_once fun="perform_scan()" />
+            <stay wp="STDBY" />
         </block>
-<!--        <block key="g" name="START" strip_button="Go" strip_icon="lookfore.png">
+        <block key="g" name="START" strip_button="Go" strip_icon="lookfore.png">
             <call_once fun="NavSetWaypointHere(WP_GOAL)"/>
             <set var="trajectoryConfidence" value="1"/>
         </block>
@@ -130,8 +131,7 @@
                 <go wp="GOAL"/>
             </while>
             <deroute block="START"/>
-        </block>-->
-
+        </block>
         <block key="l" name="Land here" strip_button="Land Here" strip_icon="land-right.png">
             <call_once fun="NavSetWaypointHere(WP_TD)"/>
             <go wp="TD"/>

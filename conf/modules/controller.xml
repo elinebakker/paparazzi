@@ -1,0 +1,16 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="controller">
+  <doc>
+    <description>This module will try to fly as far as possible within a certain obstacle zone.</description>
+  </doc>
+  <header>
+    <file name="controller.h"/>
+  </header>
+  <init fun="controller_init()"/>
+  <periodic fun="controller_periodic()" freq="15"/>
+  <makefile>
+    <file name="controller.c"/>
+  </makefile>
+</module>
+
