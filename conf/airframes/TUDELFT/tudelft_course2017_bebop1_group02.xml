@@ -115,6 +115,15 @@
 	<define name= "MAG_X_CURRENT_COEF" value="-0.00220391118884"/>
 	<define name= "MAG_Y_CURRENT_COEF" value="-0.000923048620204"/>
 	<define name= "MAG_Z_CURRENT_COEF" value="0.00106268313874"/>
+	
+	<!-- accelerometer calibration -->
+	<define name="ACCEL_X_NEUTRAL" value="107"/>
+	<define name="ACCEL_Y_NEUTRAL" value="-18"/>
+	<define name="ACCEL_Z_NEUTRAL" value="-592"/>
+	<define name="ACCEL_X_SENS" value="2.44795402309" integer="16"/>
+	<define name="ACCEL_Y_SENS" value="2.43606142103" integer="16"/>
+	<define name="ACCEL_Z_SENS" value="2.39270676451" integer="16"/>
+
 
 
     </section>
