@@ -54,11 +54,6 @@
             <define name="CV_AE_AWB_AV" value="1" />
             <define name="CV_AE_AWB_VERBOSE" value="0" />
         </module>
-        <!--<module name="cv_colorfilter">-->
-            <!--<define name="COLORFILTER_CAMERA" value="front_camera" />-->
-        <!--</module>-->
-        <!--<module name="orange_avoider" />-->
-        <!--<module name="controller" />-->
         <module name="video_rtp_stream">
             <configure name="VIEWVIDEO_HOST" value="192.168.42.23" />
             <configure name="VIEWVIDEO_BROADCAST" value="FALSE" />
@@ -69,6 +64,11 @@
             <define name="VIEWVIDEO_VIDEO_FILE" value="recordedVideo" />
             <define name="VIEWVIDEO_STREAM_VIDEO" value="FALSE" />
         </module>
+        <module name="cv_colorfilter">
+            <define name="COLORFILTER_CAMERA" value="front_camera" />
+        </module>
+        <module name="orange_avoider" />
+        <module name="controller" />
     </modules>
 
     <commands>
