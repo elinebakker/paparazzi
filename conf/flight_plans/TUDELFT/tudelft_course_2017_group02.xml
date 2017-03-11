@@ -74,7 +74,8 @@
       !(IndexOfBlock('Holding point') > nav_block) &&
       !(nav_block >= IndexOfBlock('Land here')) &&
       (autopilot_in_flight == true) )" deroute="Land here"/>
-
+        <!-- Stop if drone gets higher than 2.0 meters. -->
+        <exception cond="GetPosAlt() > 2.0" deroute="Standby"/>
     </exceptions>
     <blocks>
         <block name="Wait GPS">
@@ -109,11 +110,7 @@
                 <stay wp="South"/>
         </block>
         <block name="Scan" strip_button="Scan">
-            <for var="i" from="1" to="36">
-                <call_once fun="perform_scan(10)" />
-
-                <while cond="5 > stage_time"/>
-            </for>
+            <call_once fun="perform_scan(180)" />
             <deroute block="Standby"/>
         </block>
         <block key="g" name="START" strip_button="Go" strip_icon="lookfore.png">
