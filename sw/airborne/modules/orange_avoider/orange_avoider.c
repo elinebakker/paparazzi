@@ -52,7 +52,7 @@ void orange_avoider_init()
 //  chooseRandomIncrementAvoidance();
 }
 
-bool orange_avoider_checkIfSafeToGoForwards(){
+bool checkIfSafeToGoForwards(){
     orange_avoider_safeToGoForwards = color_count < tresholdColorCount;
     return orange_avoider_safeToGoForwards;
 }

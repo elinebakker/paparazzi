@@ -46,7 +46,7 @@ void controller_init() {
  * Function that calls a vision module to check if it is safe to move forwards, and then moves a waypoint forward or changes the heading
  */
 void controller_periodic() {
-    safeToGoForwards = orange_avoider_checkIfSafeToGoForwards();
+    safeToGoForwards = checkIfSafeToGoForwards();
     float moveDistance = fmin(maxDistance, 0.05 * trajectoryConfidence);
     if(safeToGoForwards){
         moveWaypointForward(WP_GOAL, moveDistance);
@@ -85,9 +85,9 @@ uint8_t increase_nav_heading(int32_t *heading, float incrementDegrees)
 /*
  * Perform a 360 degree spin. Assumes heading is an INT32_ANGLE. It is bound in this function.
  */
-uint8_t perform_scan()
+uint8_t perform_scan(int degree)
 {
-    increase_nav_heading(&nav_heading,360);
+    increase_nav_heading(&nav_heading,degree);
 /*    for(int angle;angle<=180;angle +=5) {
         increase_nav_heading(&nav_heading, angle);
     }*/

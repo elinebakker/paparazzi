@@ -109,8 +109,12 @@
                 <stay wp="South"/>
         </block>
         <block name="Scan" strip_button="Scan">
-            <call_once fun="perform_scan()" />
-            <stay wp="STDBY" />
+            <for var="i" from="1" to="36">
+                <call_once fun="perform_scan(10)" />
+
+                <while cond="5 > stage_time"/>
+            </for>
+            <deroute block="Standby"/>
         </block>
         <block key="g" name="START" strip_button="Go" strip_icon="lookfore.png">
             <call_once fun="NavSetWaypointHere(WP_GOAL)"/>

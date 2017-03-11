@@ -24,7 +24,7 @@ extern void controller_init(void);
 extern void controller_periodic(void);
 extern uint8_t moveWaypointForward(uint8_t, float);
 extern uint8_t moveWaypoint(uint8_t, struct EnuCoor_i *);
-extern uint8_t scan(void);
+extern uint8_t perform_scan(int degree);
 extern uint8_t increase_nav_heading(int32_t *, float);
 
 #endif

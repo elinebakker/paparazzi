@@ -19,7 +19,7 @@ extern uint8_t orange_avoider_safeToGoForwards;
 /*extern float incrementForAvoidance;
 extern uint16_t trajectoryConfidence;*/
 extern void orange_avoider_init(void);
-bool orange_avoider_checkIfSafeToGoForwards(void);
+bool checkIfSafeToGoForwards(void);
 extern void orange_avoider_periodic(void);
 /*
 extern uint8_t moveWaypointForward(uint8_t, float);
