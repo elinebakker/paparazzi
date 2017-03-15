@@ -64,10 +64,9 @@
             <define name="VIEWVIDEO_VIDEO_FILE" value="recordedVideo" />
             <define name="VIEWVIDEO_STREAM_VIDEO" value="FALSE" />
         </module>
-        <module name="cv_colorfilter">
-            <define name="COLORFILTER_CAMERA" value="front_camera" />
+        <module name="ground_follower">
+            <define name="GROUND_FOLLOWER_CAMERA" value="front_camera" />
         </module>
-        <module name="orange_avoider" />
         <module name="controller" />
     </modules>
 

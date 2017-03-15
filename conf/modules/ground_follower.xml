@@ -1,0 +1,15 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="ground_follower">
+  <doc>
+    <description>Identify the ground and follow it</description>
+  </doc>
+  <header>
+    <file name="ground_follower.h"/>
+  </header>
+  <init fun="ground_follower_init()"/>
+  <makefile>
+    <file name="ground_follower.c"/>
+  </makefile>
+</module>
+
