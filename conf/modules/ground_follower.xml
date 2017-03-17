@@ -4,6 +4,20 @@
   <doc>
     <description>Identify the ground and follow it</description>
   </doc>
+
+  <settings>
+    <dl_settings>
+      <dl_settings NAME="Ground_follower">
+        <dl_setting  min="0" step="1" max="255" var="color_lum_min" shortname="y_min" />
+        <dl_setting  min="0" step="1" max="255" var="color_lum_max" shortname="y_max" />
+        <dl_setting  min="0" step="1" max="255" var="color_cb_min" shortname="u_min" />
+        <dl_setting  min="0" step="1" max="255" var="color_cb_max" shortname="u_max" />
+        <dl_setting  min="0" step="1" max="255" var="color_cr_min" shortname="v_min" />
+        <dl_setting  min="0" step="1" max="255" var="color_cr_max" shortname="v_max" />
+      </dl_settings>
+    </dl_settings>
+  </settings>
+
   <header>
     <file name="ground_follower.h"/>
   </header>
@@ -11,5 +25,7 @@
   <makefile>
     <file name="ground_follower.c"/>
   </makefile>
+
+
 </module>
 

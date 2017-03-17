@@ -39,7 +39,7 @@ uint16_t trajectoryConfidence   = 1;
 float maxDistance               = 2;
 
 void controller_init() {
-    VERBOSE_PRINT("Controller initialized.");
+    VERBOSE_PRINT("Controller initialized.\n");
 }
 
 /*

@@ -4,6 +4,7 @@
   <doc>
     <description>This module will try to fly as far as possible within a certain obstacle zone.</description>
   </doc>
+  <depends>ground_follower.xml</depends>
   <header>
     <file name="controller.h"/>
   </header>

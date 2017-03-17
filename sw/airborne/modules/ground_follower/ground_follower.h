@@ -15,6 +15,13 @@
 #include <inttypes.h>
 #include "state.h"
 
+extern uint8_t color_lum_min;
+extern uint8_t color_lum_max;
+extern uint8_t color_cb_min;
+extern uint8_t color_cb_max;
+extern uint8_t color_cr_min;
+extern uint8_t color_cr_max;
+
 extern uint8_t orange_avoider_safeToGoForwards;
 
 extern void ground_follower_init(void);

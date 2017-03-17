@@ -44,11 +44,10 @@ uint8_t color_cr_max = 0;
 uint8_t orange_avoider_safeToGoForwards        = false;
 int bestDirection                              = 0;
 float tresholdColorCount                       = 0.90; // As a percentage
-int optionMatrix[520][240]; // The values in this matrix should be the sum of the number of pixels which are found to be 'ground' in the rectangle cornered by the x,y position and the top left corner.
-int optionMatrix2[520][240];
+uint16_t optionMatrix[240][520]; // The values in this matrix should be the sum of the number of pixels which are found to be 'ground' in the rectangle cornered by the x,y position and the top left corner.
 
 bool checkIfSafeToGoForwards(){
-    orange_avoider_safeToGoForwards = findPercentageGround(130, 390, 160 , 240) > tresholdColorCount;
+    orange_avoider_safeToGoForwards = findPercentageGround(0, 238, 0 , 519) > tresholdColorCount;
     return orange_avoider_safeToGoForwards;
 }
 
@@ -60,13 +59,10 @@ float findBestDirection(){
 struct image_t *calculateOptionMatrix(struct image_t *input_img)
 {
     uint8_t *source = input_img->  buf;  // Go trough all the pixels
-
-    int pixel_sum=0;
-
-    for (uint16_t y = 0; y < input_img->h; y++) {
-        for (uint16_t x = 0; x < input_img->w; x += 2) {
-
-
+    // VERBOSE_PRINT("h:%d , w:%d",input_img->h, input_img->w);
+    for (uint16_t y = 0; y < (input_img->h); y++) {
+        for (uint16_t x = 0; x < (input_img->w); x += 2) {
+            //optionMatrix[x][y] = 0;
             // Calculate the running sum of pixels from the top left corner till this pixel
             if(y>0 && x>0){// This is true for all except the top and left border
                 optionMatrix[x][y] = optionMatrix[x-2][y]+optionMatrix[x][y-1]-optionMatrix[x-2][y-1];
@@ -77,6 +73,8 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
             } else { // Top left pixel
                 optionMatrix[x][y] = 0;
             }
+
+            // VERBOSE_PRINT("%d >= %d",source[1],color_lum_min);
             // Check if the color is inside the specified values
             if (
                 (source[1] >= color_lum_min)
@@ -88,29 +86,17 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
                 ) {
                 // If this pixel is found to be 'ground-like', using the check above a value of 1 is added to the sum at this point
                 //pixel_sum=optionMatrix[x-1][y]+optionMatrix[x][y-1]-optionMatrix[x-1][y-1]+1
-
+                //VERBOSE_PRINT("(%d,%d)\n",x,y);
                 optionMatrix[x][y] +=1;
+                // Change color of the ground pixels
+                source[0] = 88;        // U
+                source[2] = 255;        // V
 
             }
-            // Go to the next 2 pixels
-            source += 2;
+            // Go to the next pixel (2 bytes)
+            source += 4;
         }
     }
-
-    //per rij hier dus anders
-    VERBOSE_PRINT("values bblabalbalbalablablabalbal1 %d\n",optionMatrix[0][52]);
-    VERBOSE_PRINT("values bblabalbalbalablablabalbal2 %d\n",optionMatrix[0][53]);
-    VERBOSE_PRINT("values bblabalbalbalablablabalbal3 %d\n",optionMatrix[0][54]);
-    VERBOSE_PRINT("values bblabalbalbalablablabalbal4 %d\n",optionMatrix[0][55]);
-    VERBOSE_PRINT("values bblabalbalbalablablabalbal5 %d\n",optionMatrix[1][52]);
-    VERBOSE_PRINT("values bblabalbalbalablablabalbal6 %d\n",optionMatrix[1][53]);
-    VERBOSE_PRINT("values bblabalbalbalablablabalbal7 %d\n",optionMatrix[1][54]);
-    VERBOSE_PRINT("values bblabalbalbalablablabalbal8 %d\n",optionMatrix[1][55]);
-    VERBOSE_PRINT("values bblabalbalbalablablabalbal9 %d\n",optionMatrix[2][52]);
-    VERBOSE_PRINT("values bblabalbalbalablablabalbal10 %d\n",optionMatrix[2][53]);
-    VERBOSE_PRINT("values bblabalbalbalablablabalbal11 %d\n",optionMatrix[2][54]);
-    VERBOSE_PRINT("values bblabalbalbalablablabalbal12 %d\n",optionMatrix[2][55]);
-
 
 
     return input_img;
@@ -119,10 +105,19 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
 float findPercentageGround(int x_min, int x_max, int y_min, int y_max){
     int sum = 0;
     float percentage = 0.0;
+
+    for (int col=510; col<=519; col++)
+    {
+        for(int row=230; row<=239; row++)
+            printf("%d  ", optionMatrix[row][col]);
+        printf("\n");
+    }
+
     //VERBOSE_PRINT("%i",optionMatrix[1][1]);
     sum =  optionMatrix[x_max][y_max]-optionMatrix[x_min][y_max]-optionMatrix[x_max][y_min]+optionMatrix[x_min][y_min];
-    percentage = sum/((x_max-x_min)*(y_max-y_min));
-    //VERBOSE_PRINT("Ground percentage %f\n",percentage);
+    VERBOSE_PRINT("%d-%d-%d+%d=%d",optionMatrix[x_max][y_max],optionMatrix[x_min][y_max],optionMatrix[x_max][y_min],optionMatrix[x_min][y_min],sum);
+    percentage = sum/((x_max-x_min)*(y_max-y_min)/2.0);
+    VERBOSE_PRINT("Ground percentage %f\n",percentage);
     return percentage;
 }
 
