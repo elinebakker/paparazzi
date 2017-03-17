@@ -32,8 +32,7 @@ extern struct image_t *calculateOptionMatrix(struct image_t *input_img);
 
 float findPercentageGround(int x_min, int x_max, int y_min, int y_max);
 
-float findBestDirection(int optionMatrix[240][520]);
-
+float findBestDirection(void);
 
 void updateGroundFilterSettings(void);
 
