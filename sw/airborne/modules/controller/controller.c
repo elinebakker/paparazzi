@@ -39,22 +39,36 @@ uint16_t trajectoryConfidence   = 1;
 float maxDistance               = 2;
 
 void controller_init() {
-    VERBOSE_PRINT("Controller initialized.");
+    VERBOSE_PRINT("Controller initialized.\n");
 }
 
 /*
  * Function that calls a vision module to check if it is safe to move forwards, and then moves a waypoint forward or changes the heading
  */
 void controller_periodic() {
+    float bestDirection;
     safeToGoForwards = checkIfSafeToGoForwards();
     float moveDistance = fmin(maxDistance, 0.05 * trajectoryConfidence);
     if(safeToGoForwards){
-        moveWaypointForward(WP_GOAL, moveDistance);
-        moveWaypointForward(WP_TRAJECTORY, 1.25 * moveDistance);
-        nav_set_heading_towards_waypoint(WP_GOAL);
-        trajectoryConfidence += 1;
+        bestDirection = findBestDirection();
+        if(abs(bestDirection)>1.0){
+            VERBOSE_PRINT("Found a better direction, turning %d deg\n",bestDirection);
+            int bestdir = (int) bestDirection;
+            increase_nav_heading(&nav_heading, bestdir);
+            moveWaypointForward(WP_GOAL, moveDistance);
+            moveWaypointForward(WP_TRAJECTORY, 1.25 * moveDistance);
+            nav_set_heading_towards_waypoint(WP_GOAL);
+        } else {
+            VERBOSE_PRINT("Forward\n");
+            moveWaypointForward(WP_GOAL, moveDistance);
+            moveWaypointForward(WP_TRAJECTORY, 1.25 * moveDistance);
+            nav_set_heading_towards_waypoint(WP_GOAL);
+            trajectoryConfidence += 1;
+        }
+
     }
     else{
+        VERBOSE_PRINT("Pause for a little");
         waypoint_set_here_2d(WP_GOAL);
         waypoint_set_here_2d(WP_TRAJECTORY);
         increase_nav_heading(&nav_heading, incrementForAvoidance);

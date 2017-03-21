@@ -8,7 +8,7 @@
         </target>
         <!-- Front Camera parameters -->
         <define name="H264_ROTATE" value="TRUE" />
-        <define name="MT9F002_INITIAL_OFFSET_X" value="416+2704-480" /> <!-- 480 / 960 / 1920 / 3840 (horion for theta = 0 -> 2704) -->
+        <define name="MT9F002_INITIAL_OFFSET_X" value="416+2004-480" /> <!-- 480 / 960 / 1920 / 3840 (horion for theta = 0 -> 2704) -->
         <define name="MT9F002_INITIAL_OFFSET_Y" value="1680-1040" /> <!-- 420 / 840 / 1680 / 3360 -->
         <define name="MT9F002_SENSOR_WIDTH" value="2*480" /> <!-- 480 / 960 / 1920 / 3840 -->
         <define name="MT9F002_SENSOR_HEIGHT" value="2*1040" /> <!-- 420 / 840 / 1680 / 3360 -->
@@ -41,7 +41,7 @@
             value="-500.0"/> <define name="GUIDANCE_INDI_THRUST_DYNAMICS" value="0.1"/>
             <define name="GUIDANCE_INDI_RC_DEBUG" value="TRUE"/> </module> -->
     </firmware>
-    <modules main_freq="512">
+    <modules main_freq="512"> <!--512-->
         <module name="geo_mag" />
         <module name="air_data" />
         <module name="send_imu_mag_current" />
@@ -54,21 +54,20 @@
             <define name="CV_AE_AWB_AV" value="1" />
             <define name="CV_AE_AWB_VERBOSE" value="0" />
         </module>
+        <module name="ground_follower">
+            <define name="GROUND_FOLLOWER_CAMERA" value="front_camera" />
+        </module>
+        <module name="controller" />
         <module name="video_rtp_stream">
             <configure name="VIEWVIDEO_HOST" value="192.168.42.23" />
             <configure name="VIEWVIDEO_BROADCAST" value="FALSE" />
             <define name="VIEWVIDEO_CAMERA" value="front_camera" />
             <define name="VIEWVIDEO_SHOT_PATH" value="/data/ftp/internal_000" />
             <define name="VIEWVIDEO_FPS" value="18" />
-            <define name="VIEWVIDEO_WRITE_VIDEO" value="TRUE" />
+            <define name="VIEWVIDEO_WRITE_VIDEO" value="FALSE" />
             <define name="VIEWVIDEO_VIDEO_FILE" value="recordedVideo" />
-            <define name="VIEWVIDEO_STREAM_VIDEO" value="FALSE" />
+            <define name="VIEWVIDEO_STREAM_VIDEO" value="TRUE" />
         </module>
-        <module name="cv_colorfilter">
-            <define name="COLORFILTER_CAMERA" value="front_camera" />
-        </module>
-        <module name="orange_avoider" />
-        <module name="controller" />
     </modules>
 
     <commands>
