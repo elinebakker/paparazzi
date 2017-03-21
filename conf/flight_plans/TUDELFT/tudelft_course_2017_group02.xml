@@ -104,13 +104,17 @@
             <call_once fun="NavSetWaypointHere(WP_STDBY)"/>
             <stay wp="STDBY"/>
         </block>
+        <block name="Ground Init">
+            <call_once fun="updateGroundFilterSettings()"/>
+            <stay wp="STDBY"/>
+        </block>
         <block name="FlyLine" strip_button="Fly a straight line">
                 <go wp="North" />
                 <go wp="South" />
                 <stay wp="South"/>
         </block>
         <block name="Scan" strip_button="Scan">
-            <call_once fun="perform_scan(180)" />
+            <call_once fun="perform_scan(10)" />
             <deroute block="Standby"/>
         </block>
         <block key="g" name="START" strip_button="Go" strip_icon="lookfore.png">

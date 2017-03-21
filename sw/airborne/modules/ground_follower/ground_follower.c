@@ -43,10 +43,18 @@ uint8_t color_cr_max = 0;
 // Variables required for control
 uint8_t orange_avoider_safeToGoForwards        = false;
 float tresholdColorCount                       = 0.75; // As a percentage
+float tresholdColorCountVelocity               = 0.65; // As a percentage
 uint16_t optionMatrix[240][520]; // The values in this matrix should be the sum of the number of pixels which are found to be 'ground' in the rectangle cornered by the x,y position and the top left corner.
 
 bool checkIfSafeToGoForwards(){
     orange_avoider_safeToGoForwards = findPercentageGround(0, 60, 174 , 346) > tresholdColorCount;
+    if(findPercentageGround(0, 60, 174 , 346) > tresholdColorCountVelocity){
+        gh_set_max_speed(3.0);
+    }
+    else{
+        gh_set_max_speed(2.0);
+    }
+    VERBOSE_PRINT("The max speed reference is: %f\n ", gh_ref.max_speed);
     return orange_avoider_safeToGoForwards;
 }
 
@@ -183,12 +191,12 @@ float findPercentageGround(int x_min, int x_max, int y_min, int y_max){
 void updateGroundFilterSettings(){
     // This function should determine the color of the ground and save this in the following variables.
     // Called right before start of the obstacle course
-    color_lum_min = 44;
-    color_lum_max = 71;
-    color_cb_min  = 87;
-    color_cb_max  = 116;
-    color_cr_min  = 126;
-    color_cr_max  = 144;
+    color_lum_min = 30;
+    color_lum_max = 208;
+    color_cb_min  = 47;
+    color_cb_max  = 156;
+    color_cr_min  = 114;
+    color_cr_max  = 150;
 
 }
 
