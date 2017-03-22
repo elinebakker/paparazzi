@@ -205,7 +205,7 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
             // Format is UYVY
             //R = 1.164(Y - 16) + 1.596(V - 128);
             //G = 1.164(Y - 16) - 0.813(V - 128) - 0.391(U - 128);
-            B = 1.164(Y - 16)                   + 2.018(U - 128);
+            //B = 1.164(Y - 16)                   + 2.018(U - 128);
             // VERBOSE_PRINT("%d >= %d",source[1],color_lum_min);
             // Check if the color is inside the specified values
             if (
