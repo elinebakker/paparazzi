@@ -178,28 +178,43 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
     uint8_t *source = input_img->  buf;  // Go trough all the pixels
     // VERBOSE_PRINT("h:%d , w:%d",input_img->h, input_img->w);
     for (uint16_t y = 0; y < (input_img->h); y++) {
-        for (uint16_t x = 0; x < (input_img->w); x += 2) {
+        for (uint16_t x = 0; x < (input_img->w); x += 1) {
+            int Y,U,V;
+            int R,G,B;
             //optionMatrix[x][y] = 0;
             // Calculate the running sum of pixels from the top left corner till this pixel
             if(y>0 && x>0){// This is true for all except the top and left border
-                optionMatrix[x][y] = optionMatrix[x-2][y]+optionMatrix[x][y-1]-optionMatrix[x-2][y-1];
+                optionMatrix[x][y] = optionMatrix[x-1][y]+optionMatrix[x][y-1]-optionMatrix[x-1][y-1];
             }else if(x>0) { // Top border
-                optionMatrix[x][y] = optionMatrix[x-2][y];
+                optionMatrix[x][y] = optionMatrix[x-1][y];
             } else if(y>0){ // Left border
                 optionMatrix[x][y] = optionMatrix[x][y-1];
             } else { // Top left pixel
                 optionMatrix[x][y] = 0;
             }
+            V = source[2];
+            U = source[0];
+            if(x%2 == 0){
+                // Even pixels
+                Y = source[1];
+            } else {
+                // Odd pixels
+                Y = source[3];
+            }
 
+            // Format is UYVY
+            //R = 1.164(Y - 16) + 1.596(V - 128);
+            //G = 1.164(Y - 16) - 0.813(V - 128) - 0.391(U - 128);
+            B = 1.164(Y - 16)                   + 2.018(U - 128);
             // VERBOSE_PRINT("%d >= %d",source[1],color_lum_min);
             // Check if the color is inside the specified values
             if (
-                (source[1] >= color_lum_min)
-                && (source[1] <= color_lum_max)
-                && (source[0] >= color_cb_min)
-                && (source[0] <= color_cb_max)
-                && (source[2] >= color_cr_min)
-                && (source[2] <= color_cr_max)
+                (Y >= color_lum_min)
+                && (Y <= color_lum_max)
+                && (U >= color_cb_min)
+                && (U <= color_cb_max)
+                && (V >= color_cr_min)
+                && (V <= color_cr_max)
                 ) {
                 // If this pixel is found to be 'ground-like', using the check above a value of 1 is added to the sum at this point
                 //pixel_sum=optionMatrix[x-1][y]+optionMatrix[x][y-1]-optionMatrix[x-1][y-1]+1
@@ -210,8 +225,10 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
                 source[2] = 255;        // V
 
             }
-            // Go to the next pixel (2 bytes)
-            source += 4;
+            if(x%2 == 0) {
+                // Go to the next pixel (2 bytes)
+                source += 4;
+            }
         }
     }
 
@@ -233,7 +250,7 @@ float findPercentageGround(int x_min, int x_max, int y_min, int y_max){
     //VERBOSE_PRINT("%i",optionMatrix[1][1]);
     sum =  optionMatrix[x_max][y_max]-optionMatrix[x_min][y_max]-optionMatrix[x_max][y_min]+optionMatrix[x_min][y_min];
     VERBOSE_PRINT("%d-%d-%d+%d=%d",optionMatrix[x_max][y_max],optionMatrix[x_min][y_max],optionMatrix[x_max][y_min],optionMatrix[x_min][y_min],sum);
-    percentage = sum/((x_max-x_min)*(y_max-y_min)/2.0);
+    percentage = sum/((x_max-x_min)*(y_max-y_min));
     VERBOSE_PRINT("Ground percentage %f\n",percentage);
     return percentage;
 }
