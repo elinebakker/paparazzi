@@ -42,11 +42,11 @@ uint8_t color_cr_max = 0;
 
 // Variables required for control
 uint8_t orange_avoider_safeToGoForwards        = false;
-float tresholdColorCount                       = 0.75; // As a percentage
+float tresholdColorCount                       = 0.80; // As a percentage
 uint16_t optionMatrix[240][520]; // The values in this matrix should be the sum of the number of pixels which are found to be 'ground' in the rectangle cornered by the x,y position and the top left corner.
 
-bool checkIfSafeToGoForwards(){
-    orange_avoider_safeToGoForwards = findPercentageGround(0, 60, 174 , 346) > tresholdColorCount;
+bool checkIfSafeToGoForwards() {
+    orange_avoider_safeToGoForwards = findPercentageGround(0, 90, 210, 310) > tresholdColorCount;
     return orange_avoider_safeToGoForwards;
 }
 
@@ -58,7 +58,7 @@ float findBestDirection(void){
     int y_offset_max;
 
     int x_offset_min=0;
-    int x_offset_max=height_x/2;
+    int x_offset_max=(height_x/4)*2;
 
 
     int steps=5;
@@ -83,7 +83,7 @@ float findBestDirection(void){
 
     }
 
-    int threshold=-250;
+    int threshold=150;
 
     int pixels_center=g_pixels[steps/2];
     float direction_deg=0.0;
@@ -91,15 +91,12 @@ float findBestDirection(void){
     for (int x=0; x<steps; x++){
         if (x!=steps/2 && g_pixels[x]>max_value && (g_pixels[x]-threshold)>pixels_center){
             max_value=g_pixels[x];
-            direction_deg=(float) -30.0+((60.0/steps)*x);
+            direction_deg=(float) -20.0+((40.0/(steps-1))*x);
 
         }
 
 
     }
-
-
-
 
     return direction_deg;
 }
@@ -200,8 +197,9 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
             } else {
                 // Odd pixels
                 Y = source[3];
-            }
 
+            }
+            //VERBOSE_PRINT("%d:%d,%d,%d\n",x,Y,U,V);
             // Format is UYVY
             //R = 1.164(Y - 16) + 1.596(V - 128);
             //G = 1.164(Y - 16) - 0.813(V - 128) - 0.391(U - 128);
@@ -216,16 +214,22 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
                 && (V >= color_cr_min)
                 && (V <= color_cr_max)
                 ) {
+                //VERBOSE_PRINT("x=%d",x);
                 // If this pixel is found to be 'ground-like', using the check above a value of 1 is added to the sum at this point
                 //pixel_sum=optionMatrix[x-1][y]+optionMatrix[x][y-1]-optionMatrix[x-1][y-1]+1
                 //VERBOSE_PRINT("(%d,%d)\n",x,y);
                 optionMatrix[x][y] +=1;
                 // Change color of the ground pixels
-                source[0] = 88;        // U
-                source[2] = 255;        // V
+                if(x % 2 == 0) {
+                    //source[1] = 0;
+                } else {
+                    source[0] = 88;        // U
+                    source[2] = 255;        // V
+                }
 
             }
-            if(x%2 == 0) {
+
+            if(x % 2 == 1 && x < (input_img->w-1)) {
                 // Go to the next pixel (2 bytes)
                 source += 4;
             }
@@ -240,7 +244,7 @@ float findPercentageGround(int x_min, int x_max, int y_min, int y_max){
     int sum = 0;
     float percentage = 0.0;
 
-/*    for (int col=510; col<=519; col++)
+    /*for (int col=510; col<=519; col++)
     {
         for(int row=230; row<=239; row++)
             printf("%d  ", optionMatrix[row][col]);
@@ -249,8 +253,8 @@ float findPercentageGround(int x_min, int x_max, int y_min, int y_max){
 
     //VERBOSE_PRINT("%i",optionMatrix[1][1]);
     sum =  optionMatrix[x_max][y_max]-optionMatrix[x_min][y_max]-optionMatrix[x_max][y_min]+optionMatrix[x_min][y_min];
-    VERBOSE_PRINT("%d-%d-%d+%d=%d",optionMatrix[x_max][y_max],optionMatrix[x_min][y_max],optionMatrix[x_max][y_min],optionMatrix[x_min][y_min],sum);
-    percentage = sum/((x_max-x_min)*(y_max-y_min));
+    //VERBOSE_PRINT("%d-%d-%d+%d=%d",optionMatrix[x_max][y_max],optionMatrix[x_min][y_max],optionMatrix[x_max][y_min],optionMatrix[x_min][y_min],sum);
+    percentage = sum/((x_max-x_min)*(y_max-y_min)*1.0);
     VERBOSE_PRINT("Ground percentage %f\n",percentage);
     return percentage;
 }
@@ -258,12 +262,12 @@ float findPercentageGround(int x_min, int x_max, int y_min, int y_max){
 void updateGroundFilterSettings(){
     // This function should determine the color of the ground and save this in the following variables.
     // Called right before start of the obstacle course
-    color_lum_min = 44;
-    color_lum_max = 71;
-    color_cb_min  = 87;
-    color_cb_max  = 116;
-    color_cr_min  = 126;
-    color_cr_max  = 144;
+    color_lum_min = 37;
+    color_lum_max = 209;
+    color_cb_min  = 47;
+    color_cb_max  = 110;
+    color_cr_min  = 123;
+    color_cr_max  = 173;
 
 }
 
@@ -273,12 +277,12 @@ void updateGroundFilterSettings(){
 void ground_follower_init()
 {
     // Initialise the settings of the ground filter
-    color_lum_min = 30;
-    color_lum_max = 208;
+    color_lum_min = 37;
+    color_lum_max = 209;
     color_cb_min  = 47;
-    color_cb_max  = 156;
-    color_cr_min  = 114;
-    color_cr_max  = 150;
+    color_cb_max  = 110;
+    color_cr_min  = 123;
+    color_cr_max  = 173;
 
     // Apply the calculateOptionMatrix function to the images generated by the video camera
     listener = cv_add_to_device(&GROUND_FOLLOWER_CAMERA, calculateOptionMatrix);

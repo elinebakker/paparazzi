@@ -34,41 +34,45 @@
 
 // Define initial variables
 uint8_t safeToGoForwards        = false;
-float incrementForAvoidance     = 10.0;
+float incrementForAvoidance     = 5.0;
 uint16_t trajectoryConfidence   = 1;
 float maxDistance               = 2;
 
 void controller_init() {
     VERBOSE_PRINT("Controller initialized.\n");
 }
+uint8_t looping_counter = 0;
 
 /*
  * Function that calls a vision module to check if it is safe to move forwards, and then moves a waypoint forward or changes the heading
  */
 void controller_periodic() {
+
+    looping_counter+=1;
+    VERBOSE_PRINT("--------------------------------------------------\n");
     float bestDirection;
     safeToGoForwards = checkIfSafeToGoForwards();
     float moveDistance = fmin(maxDistance, 0.05 * trajectoryConfidence);
     if(safeToGoForwards){
-        bestDirection = findBestDirection();
-        if(abs(bestDirection)>1.0){
-            VERBOSE_PRINT("Found a better direction, turning %d deg\n",bestDirection);
+            bestDirection = findBestDirection();
+            VERBOSE_PRINT("The best direction is: %f\n", bestDirection);
+        if(abs(bestDirection)>1.0 && looping_counter % 10 == 0){
+            VERBOSE_PRINT("Found a better direction, turning %f deg\n",bestDirection);
             int bestdir = (int) bestDirection;
             increase_nav_heading(&nav_heading, bestdir);
-            moveWaypointForward(WP_GOAL, moveDistance);
-            moveWaypointForward(WP_TRAJECTORY, 1.25 * moveDistance);
+            moveWaypointForward(WP_GOAL, moveDistance, bestdir);
+            moveWaypointForward(WP_TRAJECTORY, 1.25 * moveDistance, bestdir);
             nav_set_heading_towards_waypoint(WP_GOAL);
         } else {
             VERBOSE_PRINT("Forward\n");
-            moveWaypointForward(WP_GOAL, moveDistance);
-            moveWaypointForward(WP_TRAJECTORY, 1.25 * moveDistance);
+            moveWaypointForward(WP_GOAL, moveDistance, 0.0);
+            moveWaypointForward(WP_TRAJECTORY, 1.25 * moveDistance, 0.0);
             nav_set_heading_towards_waypoint(WP_GOAL);
             trajectoryConfidence += 1;
         }
-
-    }
-    else{
-        VERBOSE_PRINT("Pause for a little");
+        VERBOSE_PRINT("\n");
+    } else{
+        VERBOSE_PRINT("Pause for a little\n");
         waypoint_set_here_2d(WP_GOAL);
         waypoint_set_here_2d(WP_TRAJECTORY);
         increase_nav_heading(&nav_heading, incrementForAvoidance);
@@ -92,7 +96,7 @@ uint8_t increase_nav_heading(int32_t *heading, float incrementDegrees)
     // Check if your turn made it go out of bounds...
     INT32_ANGLE_NORMALIZE(newHeading); // HEADING HAS INT32_ANGLE_FRAC....
     *heading = newHeading;
-    VERBOSE_PRINT("Increasing heading to %f\n", ANGLE_FLOAT_OF_BFP(*heading) * 180 / M_PI);
+    //VERBOSE_PRINT("Increasing heading to %f\n", ANGLE_FLOAT_OF_BFP(*heading) * 180 / M_PI);
     return false;
 }
 
@@ -111,17 +115,17 @@ uint8_t perform_scan(int degree)
 /*
  * Calculates coordinates of a distance of 'distanceMeters' forward w.r.t. current position and heading
  */
-uint8_t calculateForwards(struct EnuCoor_i *new_coor, float distanceMeters)
+uint8_t calculateForwards(struct EnuCoor_i *new_coor, float distanceMeters, float angle)
 {
     struct EnuCoor_i *pos             = stateGetPositionEnu_i(); // Get your current position
     struct Int32Eulers *eulerAngles   = stateGetNedToBodyEulers_i();
     // Calculate the sine and cosine of the heading the drone is keeping
-    float sin_heading                 = sinf(ANGLE_FLOAT_OF_BFP(eulerAngles->psi));
-    float cos_heading                 = cosf(ANGLE_FLOAT_OF_BFP(eulerAngles->psi));
+    float sin_heading                 = sinf(ANGLE_FLOAT_OF_BFP(eulerAngles->psi)+angle);
+    float cos_heading                 = cosf(ANGLE_FLOAT_OF_BFP(eulerAngles->psi)+angle);
     // Now determine where to place the waypoint you want to go to
     new_coor->x                       = pos->x + POS_BFP_OF_REAL(sin_heading * (distanceMeters));
     new_coor->y                       = pos->y + POS_BFP_OF_REAL(cos_heading * (distanceMeters));
-    VERBOSE_PRINT("Calculated %f m forward position. x: %f  y: %f based on pos(%f, %f) and heading(%f)\n", distanceMeters, POS_FLOAT_OF_BFP(new_coor->x), POS_FLOAT_OF_BFP(new_coor->y), POS_FLOAT_OF_BFP(pos->x), POS_FLOAT_OF_BFP(pos->y), ANGLE_FLOAT_OF_BFP(eulerAngles->psi)*180/M_PI);
+    //VERBOSE_PRINT("Calculated %f m forward position. x: %f  y: %f based on pos(%f, %f) and heading(%f)\n", distanceMeters, POS_FLOAT_OF_BFP(new_coor->x), POS_FLOAT_OF_BFP(new_coor->y), POS_FLOAT_OF_BFP(pos->x), POS_FLOAT_OF_BFP(pos->y), ANGLE_FLOAT_OF_BFP(eulerAngles->psi)*180/M_PI);
     return false;
 }
 
@@ -138,10 +142,10 @@ uint8_t moveWaypoint(uint8_t waypoint, struct EnuCoor_i *new_coor)
 /*
  * Calculates coordinates of distance forward and sets waypoint 'waypoint' to those coordinates
  */
-uint8_t moveWaypointForward(uint8_t waypoint, float distanceMeters)
+uint8_t moveWaypointForward(uint8_t waypoint, float distanceMeters, float angle)
 {
     struct EnuCoor_i new_coor;
-    calculateForwards(&new_coor, distanceMeters);
+    calculateForwards(&new_coor, distanceMeters, angle);
     moveWaypoint(waypoint, &new_coor);
     return false;
 }

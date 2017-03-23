@@ -110,7 +110,7 @@
                 <stay wp="South"/>
         </block>
         <block name="Scan" strip_button="Scan">
-            <call_once fun="perform_scan(180)" />
+            <call_once fun="perform_scan(10)" />
             <deroute block="Standby"/>
         </block>
         <block key="g" name="START" strip_button="Go" strip_icon="lookfore.png">
@@ -128,7 +128,7 @@
         </block>
         <block name="GetIntoObstacleZone">
             <while cond="!InsideObstacleZone(GetPosX(),GetPosY())">
-                <call_once fun="moveWaypointForward(WP_GOAL, 0.1)"/>
+                <call_once fun="moveWaypointForward(WP_GOAL, 0.1, 0.0)"/>
                 <go wp="GOAL"/>
             </while>
             <deroute block="START"/>
