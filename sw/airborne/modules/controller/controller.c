@@ -23,7 +23,7 @@
 //#include "modules/orange_avoider/orange_avoider.c"
 
 // Define verbose mode which will write messages to the telemetry when activated.
-#define CONTROLLER_VERBOSE TRUE
+#define CONTROLLER_VERBOSE FALSE
 
 #define PRINT(string,...) fprintf(stderr, "[controller->%s()] " string,__FUNCTION__ , ##__VA_ARGS__)
 #if CONTROLLER_VERBOSE

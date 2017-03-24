@@ -59,12 +59,12 @@
         </module>
         <module name="controller" />
         <module name="video_rtp_stream">
-            <configure name="VIEWVIDEO_HOST" value="192.168.42.86" />
+            <configure name="VIEWVIDEO_HOST" value="192.168.42.23" />
             <configure name="VIEWVIDEO_BROADCAST" value="FALSE" />
             <define name="VIEWVIDEO_CAMERA" value="front_camera" />
             <define name="VIEWVIDEO_SHOT_PATH" value="/data/ftp/internal_000" />
             <define name="VIEWVIDEO_FPS" value="18" />
-            <define name="VIEWVIDEO_WRITE_VIDEO" value="TRUE" />
+            <define name="VIEWVIDEO_WRITE_VIDEO" value="FALSE" />
             <define name="VIEWVIDEO_VIDEO_FILE" value="recordedVideo" />
             <define name="VIEWVIDEO_STREAM_VIDEO" value="TRUE" />
         </module>

@@ -94,11 +94,15 @@
             <call_once fun="NavResurrect()" />
             <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
             <call_once fun="NavResurrect()"/>
+            <call_once fun="updateGroundFilterSettings()"/>
         </block>
         <block key="t" name="Takeoff" strip_button="Takeoff" strip_icon="takeoff.png">
             <exception cond="GetPosAlt() > 1.0" deroute="Standby"/>
             <call_once fun="NavSetWaypointHere(WP_CLIMB)"/>
             <stay climb="nav_climb_vspeed" vmode="climb" wp="CLIMB"/>
+        </block>
+        <block key="u" name="UpdateGround">
+            <call_once fun="updateGroundFilterSettings()"/>
         </block>
         <block key="s" name="Standby" strip_button="Standby" strip_icon="home.png">
             <call_once fun="NavSetWaypointHere(WP_STDBY)"/>

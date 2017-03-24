@@ -22,6 +22,8 @@ extern uint8_t color_cb_max;
 extern uint8_t color_cr_min;
 extern uint8_t color_cr_max;
 
+extern uint8_t performGroundScan;
+
 extern uint8_t orange_avoider_safeToGoForwards;
 
 extern void ground_follower_init(void);
@@ -30,11 +32,17 @@ extern bool checkIfSafeToGoForwards(void);
 
 extern struct image_t *calculateOptionMatrix(struct image_t *input_img);
 
+extern struct image_t *createHistogram(struct image_t *input_img);
+
 float findPercentageGround(int x_min, int x_max, int y_min, int y_max);
 
 float findBestDirection(void);
 
 void updateGroundFilterSettings(void);
+
+int find_max(int a[], int n);
+
+int * find_limits(int a[], int n, float margin);
 
 #endif
 
