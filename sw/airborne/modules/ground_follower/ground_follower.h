@@ -32,6 +32,8 @@ extern bool checkIfSafeToGoForwards(void);
 
 extern struct image_t *calculateOptionMatrix(struct image_t *input_img);
 
+extern float getFuzzyValue(int Y, int U, int V);
+
 extern struct image_t *createHistogram(struct image_t *input_img);
 
 float findPercentageGround(int x_min, int x_max, int y_min, int y_max);
