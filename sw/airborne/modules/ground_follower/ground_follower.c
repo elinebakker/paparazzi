@@ -43,7 +43,8 @@ uint8_t color_cr_max = 0;
 // Variables required for control
 uint8_t orange_avoider_safeToGoForwards        = false;
 float tresholdColorCount                       = 0.80; // As a percentage
-uint16_t optionMatrix[240][520]; // The values in this matrix should be the sum of the number of pixels which are found to be 'ground' in the rectangle cornered by the x,y position and the top left corner.
+float optionMatrix[240][520]; // The values in this matrix should be the sum of the number of pixels which are found to be 'ground' in the rectangle cornered by the x,y position and the top left corner.
+float F; // The fuzzy value that determines the groundness per pixel
 
 bool checkIfSafeToGoForwards() {
     orange_avoider_safeToGoForwards = findPercentageGround(0, 90, 210, 310) > tresholdColorCount;
@@ -206,19 +207,15 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
             //B = 1.164(Y - 16)                   + 2.018(U - 128);
             // VERBOSE_PRINT("%d >= %d",source[1],color_lum_min);
             // Check if the color is inside the specified values
-            if (
-                (Y >= color_lum_min)
-                && (Y <= color_lum_max)
-                && (U >= color_cb_min)
-                && (U <= color_cb_max)
-                && (V >= color_cr_min)
-                && (V <= color_cr_max)
-                ) {
+
                 //VERBOSE_PRINT("x=%d",x);
-                // If this pixel is found to be 'ground-like', using the check above a value of 1 is added to the sum at this point
                 //pixel_sum=optionMatrix[x-1][y]+optionMatrix[x][y-1]-optionMatrix[x-1][y-1]+1
                 //VERBOSE_PRINT("(%d,%d)\n",x,y);
-                optionMatrix[x][y] +=1;
+            F=getFuzzyValue(Y,U,V);
+            optionMatrix[x][y] +=F;
+            float fuzzy_threshold = 0.8;
+
+            if (F > fuzzy_threshold) {
                 // Change color of the ground pixels
                 if(x % 2 == 0) {
                     //source[1] = 0;
@@ -226,7 +223,6 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
                     source[0] = 88;        // U
                     source[2] = 255;        // V
                 }
-
             }
 
             if(x % 2 == 1 && x < (input_img->w-1)) {
@@ -238,6 +234,31 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
 
 
     return input_img;
+}
+
+float getFuzzyValue(int Y, int U, int V) {
+    int rampLength = 20; // Set fuzzy rampLength
+    int color_lum_min_lower = color_lum_min - rampLength / 2; // Determine upper and lower bounds per value.
+    int color_lum_min_upper = color_lum_min + rampLength / 2;
+    int color_lum_max_lower = color_lum_max - rampLength / 2; // Determine upper and lower bounds per value.
+    int color_lum_max_upper = color_lum_max + rampLength / 2;
+
+    Y = 1; //  When Y is larger than the min_upper bound or lower than the max_lower bound.
+    if (Y > color_lum_min_lower && Y < color_lum_min_upper) { // If Y on fuzzy ramp around the min value
+        Y = 1 / color_lum_min * (color_lum_min - color_lum_min_lower); // Assign a value from 0 to 1
+
+    } else if (Y > color_lum_max_lower && Y < color_lum_max_upper) { // If Y on fuzzy ramp around the max value
+        Y = 1 - (1 / color_lum_min * (color_lum_min - color_lum_min_lower)); // Assign a value from 1 to 0.
+    }
+
+    (Y <= color_lum_min_lower) ? 0 : Y; // If Y is smaller than the lowest bound, assign 0, otherwise remain old value.
+    (Y >= color_lum_max_upper) ? 0 : Y; // If Y is larger than the highest bound, assign 0, otherwise remain old value.
+
+    U = (U >= color_cb_min && U <= color_cb_max) ? 1 : 0; // Assign 0 or 1 to U
+    V = (V >= color_cr_min && V <= color_cr_max) ? 1 : 0; // Assign 0 or 1 to V
+
+    F = Y*U*V;
+    return F;
 }
 
 float findPercentageGround(int x_min, int x_max, int y_min, int y_max){
