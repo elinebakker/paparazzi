@@ -244,7 +244,8 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
 
 float getFuzzyValue(int Y, int U, int V) {
     float F;
-    int rampLength = 10; // Set fuzzy rampLength
+    float Y_f,V_f,U_f;
+    int rampLength = 7; // Set fuzzy rampLength
     int color_lum_min_lower = color_lum_min - rampLength / 2; // Determine upper and lower bounds per value.
     int color_lum_min_upper = color_lum_min + rampLength / 2;
     int color_lum_max_lower = color_lum_max - rampLength / 2; // Determine upper and lower bounds per value.
@@ -264,42 +265,42 @@ float getFuzzyValue(int Y, int U, int V) {
 
 
     // Determine Fuzzy Y value
-    Y = 1; //  When Y is larger than the min_upper bound or lower than the max_lower bound.
+    Y_f = 1; //  When Y is larger than the min_upper bound or lower than the max_lower bound.
     if (Y > color_lum_min_lower && Y < color_lum_min_upper) { // If Y on fuzzy ramp around the min value
-        Y = 1 / color_lum_min * (color_lum_min - color_lum_min_lower); // Assign a value from 0 to 1
+        Y_f = 1 / color_lum_min * (color_lum_min - color_lum_min_lower); // Assign a value from 0 to 1
 
     } else if (Y > color_lum_max_lower && Y < color_lum_max_upper) { // If Y on fuzzy ramp around the max value
-        Y = 1 - (1 / color_lum_min * (color_lum_min - color_lum_min_lower)); // Assign a value from 1 to 0.
+        Y_f = 1 - (1 / color_lum_min * (color_lum_min - color_lum_min_lower)); // Assign a value from 1 to 0.
     }
 
-    (Y <= color_lum_min_lower) ? 0 : Y; // If Y is smaller than the lowest bound, assign 0, otherwise remain old value.
-    (Y >= color_lum_max_upper) ? 0 : Y; // If Y is larger than the highest bound, assign 0, otherwise remain old value.
+    Y_f = (Y <= color_lum_min_lower) ? 0 : Y_f; // If Y is smaller than the lowest bound, assign 0, otherwise remain old value.
+    Y_f = (Y >= color_lum_max_upper) ? 0 : Y_f;// If Y is larger than the highest bound, assign 0, otherwise remain old value.
 
     // Determine Fuzzy U value
-    U = 1; //  When U is larger than the min_upper bound or lower than the max_lower bound.
+    U_f = 1; //  When U is larger than the min_upper bound or lower than the max_lower bound.
     if (U > color_cb_min_lower && U < color_cb_min_upper) { // If U on fuzzy ramp around the min value
-        U = 1 / color_cb_min * (color_cb_min - color_cb_min_lower); // Assign a value from 0 to 1
+        U_f = 1 / color_cb_min * (color_cb_min - color_cb_min_lower); // Assign a value from 0 to 1
 
     } else if (U > color_cb_max_lower && U < color_cb_max_upper) { // If U on fuzzy ramp around the max value
-        U = 1 - (1 / color_cb_min * (color_cb_min - color_cb_min_lower)); // Assign a value from 1 to 0.
+        U_f = 1 - (1 / color_cb_min * (color_cb_min - color_cb_min_lower)); // Assign a value from 1 to 0.
     }
 
-    (U <= color_cb_min_lower) ? 0 : U; // If U is smaller than the lowest bound, assign 0, otherwise remain old value.
-    (U >= color_cb_max_upper) ? 0 : U; // If U is larger than the highest bound, assign 0, otherwise remain old value.
+    U_f=(U <= color_cb_min_lower) ? 0 : U_f; // If U is smaller than the lowest bound, assign 0, otherwise remain old value.
+    U_f=(U >= color_cb_max_upper) ? 0 : U_f; // If U is larger than the highest bound, assign 0, otherwise remain old value.
 
     // Determine Fuzzy V value
-    V = 1; //  When V is larger than the min_upper bound or lower than the max_lower bound.
+    V_f = 1; //  When V is larger than the min_upper bound or lower than the max_lower bound.
     if (V > color_cr_min_lower && V < color_cr_min_upper) { // If V on fuzzy ramp around the min value
-        V = 1 / color_cr_min * (color_cr_min - color_cr_min_lower); // Assign a value from 0 to 1
+        V_f = 1 / color_cr_min * (color_cr_min - color_cr_min_lower); // Assign a value from 0 to 1
 
     } else if (V > color_cr_max_lower && V < color_cr_max_upper) { // If V on fuzzy ramp around the max value
-        V = 1 - (1 / color_cr_min * (color_cr_min - color_cr_min_lower)); // Assign a value from 1 to 0.
+        V_f = 1 - (1 / color_cr_min * (color_cr_min - color_cr_min_lower)); // Assign a value from 1 to 0.
     }
 
-    (V <= color_cr_min_lower) ? 0 : V; // If V is smaller than the lowest bound, assign 0, otherwise remain old value.
-    (V >= color_cr_max_upper) ? 0 : V; // If V is larger than the highest bound, assign 0, otherwise remain old value.
+    V_f = (V <= color_cr_min_lower) ? 0 : V_f; // If V is smaller than the lowest bound, assign 0, otherwise remain old value.
+    V_f = (V >= color_cr_max_upper) ? 0 : V_f; // If V is larger than the highest bound, assign 0, otherwise remain old value.
 
-    F = Y*U*V;
+    F = Y_f*U_f*V_f;
     return F;
 }
 
@@ -422,11 +423,11 @@ int * find_limits(int a[], int n, float margin){
         ymax = results[1];
         ymin = results[0];
 
-        results = find_limits(histo_v, n, 0.95);
+        results = find_limits(histo_v, n, 0.97);
         vmax = results[1];
         vmin = results[0];
 
-        results = find_limits(histo_u, n, 0.95);
+        results = find_limits(histo_u, n, 0.97);
         umax = results[1];
         umin = results[0];
         VERBOSE_PRINT("\n Y range %d to %d\n U range %d to %d\n V range %d to %d\n", ymin, ymax, umin, umax, vmin,

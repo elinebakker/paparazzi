@@ -2284,12 +2284,12 @@
         <!-- 255 is free -->
 
         <message name="GROUND_FOLLLOWER_INFO" id="255">
-            <field name="color_lum_min" type="uint8_t"> </field>
-            <field name="color_lum_max" type="uint8_t"></field>
-            <field name="color_cb_min" type="uint8_t"></field>
-            <field name="color_cb_max" type="uint8_t"></field>
-            <field name="color_cr_min" type="uint8_t"></field>
-            <field name="color_cr_max" type="uint8_t"></field>
+            <field name="color_lum_min" type="uint8"> </field>
+            <field name="color_lum_max" type="uint8"></field>
+            <field name="color_cb_min" type="uint8"></field>
+            <field name="color_cb_max" type="uint8"></field>
+            <field name="color_cr_min" type="uint8"></field>
+            <field name="color_cr_max" type="uint8"></field>
         </message>
 
     </msg_class>
