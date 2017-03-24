@@ -40,6 +40,8 @@ uint8_t color_cb_max = 0;
 uint8_t color_cr_min = 0;
 uint8_t color_cr_max = 0;
 
+uint8_t performGroundScan = 0;
+
 // Variables required for control
 uint8_t orange_avoider_safeToGoForwards        = false;
 float tresholdColorCount                       = 0.80; // As a percentage
@@ -172,6 +174,10 @@ float findBestDirection(void){
 
 struct image_t *calculateOptionMatrix(struct image_t *input_img)
 {
+    if(performGroundScan) {
+        createHistogram(input_img);
+        performGroundScan = 0;
+    }
     uint8_t *source = input_img->  buf;  // Go trough all the pixels
     // VERBOSE_PRINT("h:%d , w:%d",input_img->h, input_img->w);
     for (uint16_t y = 0; y < (input_img->h); y++) {
@@ -262,12 +268,7 @@ float findPercentageGround(int x_min, int x_max, int y_min, int y_max){
 void updateGroundFilterSettings(){
     // This function should determine the color of the ground and save this in the following variables.
     // Called right before start of the obstacle course
-    color_lum_min = 37;
-    color_lum_max = 209;
-    color_cb_min  = 47;
-    color_cb_max  = 110;
-    color_cr_min  = 123;
-    color_cr_max  = 173;
+    performGroundScan = 1;
 
 }
 
@@ -279,7 +280,7 @@ void updateGroundFilterSettings(){
       int c, max, index;
       // int n;
       //n = sizeof(a)/sizeof(a[0]);
-      VERBOSE_PRINT("%d\n",n);
+      //VERBOSE_PRINT("%d\n",n);
       max = a[0];
       index = 0;
      
@@ -295,7 +296,7 @@ void updateGroundFilterSettings(){
 
 //Limit calculation
 int * find_limits(int a[], int n, float margin){
-    int i, id, range=0, sum=0;
+    int i, id, range = 0, sum = 0;
     // float margin = 0.9;                     //The percentage of values desired to be within the limits
     
     id = find_max(a,n);
@@ -305,7 +306,7 @@ int * find_limits(int a[], int n, float margin){
     for(i=0;i<n;i++){
         sum += a[i];
     }
-    float ratio = 0;
+    float ratio = 0.0;
     while(ratio<margin){                    //Runs until the ratio is achieved
         
         if(a[lowerlim-1]<a[upperlim+1]){
@@ -316,11 +317,12 @@ int * find_limits(int a[], int n, float margin){
             lowerlim -= 1;
         }else{upperlim +=1;}
         
-        printf("%d %d %f\n",lowerlim, upperlim, ratio);
+
         range = 0;
         for(i=lowerlim; i<=(upperlim);i++){
             range += a[i];
         }
+        //VERBOSE_PRINT("l:%d u:%d r:%d s:%d n:%d %f\n",lowerlim, upperlim, range, sum, n, ratio);
     ratio = range/(float)sum;       
     }
 
@@ -335,44 +337,55 @@ int * find_limits(int a[], int n, float margin){
 // # This function generates the Histogram in form of an array #
     struct image_t *createHistogram(struct image_t *input_img) //change output struct to whatever we will have
     {
-        VERBOSE_PRINT("test");
-    int histo_y[256],histo_u[256],histo_v[256];
-    int ymax, ymin, vmax, vmin, umax, umin;
-    // float margin = 0; // margin tolerances for the intensity
-        
-        uint8_t *source = input_img->  buf;  // Go trough all the pixels
+        int histo_y[256] = {0};
+        int histo_u[256] = {0};
+        int histo_v[256] = {0};
+        int ymax, ymin, vmax, vmin, umax, umin;
+        // float margin = 0; // margin tolerances for the intensity
+
+        uint8_t *source = input_img->buf;  // Go trough all the pixels
         // VERBOSE_PRINT("h:%d , w:%d",input_img->h, input_img->w);
         for (uint16_t y = 0; y < (input_img->h); y++) {
             for (uint16_t x = 0; x < (input_img->w); x += 2) {
-                
-                histo_y[source[1]] +=1; //Store Y value in histogram
-                histo_y[source[4]] +=1; //Store Y value in histogram
-                histo_u[source[0]] +=1; //Store U value in histogram
-                histo_v[source[2]] +=1; //Store V value in histogram
-                
+
+                histo_y[source[1]] += 1; //Store Y value in histogram
+                histo_y[source[4]] += 1; //Store Y value in histogram
+                histo_u[source[0]] += 1; //Store U value in histogram
+                histo_v[source[2]] += 1; //Store V value in histogram
+
                 // Go to the next pixel (2 bytes)
                 source += 4;
             }
         }
-// Ranges for 3 channels: Y,U,V
+        // Ranges for 3 channels: Y,U,V
         int *results;
         int n = 256;
         float margin = 0.9;
-        results =find_limits(histo_y,n, margin);
+        results = find_limits(histo_y, n, 0.99);
         ymax = results[1];
         ymin = results[0];
-        
-        results =find_limits(histo_v,n,margin);
+
+        results = find_limits(histo_v, n, 0.95);
         vmax = results[1];
         vmin = results[0];
-        
-        results =find_limits(histo_u,n, margin);
+
+        results = find_limits(histo_u, n, 0.95);
         umax = results[1];
         umin = results[0];
-        VERBOSE_PRINT("\n Y range %d to %d\n U range %d to %d\n V range %d to %d\n",ymin,ymax,umin,umax,vmin,vmax);
+        VERBOSE_PRINT("\n Y range %d to %d\n U range %d to %d\n V range %d to %d\n", ymin, ymax, umin, umax, vmin,
+                      vmax);
+
+        color_lum_min = ymin;
+        color_lum_max = ymax;
+        color_cb_min  = umin;
+        color_cb_max  = umax;
+        color_cr_min  = vmin;
+        color_cr_max  = vmax;
+
+        performGroundScan = 0;
         return input_img;
         // return ymax, ymin, umin, umax, vmin, vmax; //change output
-
+    }
     }
 
 void ground_follower_init()
@@ -386,7 +399,7 @@ void ground_follower_init()
     color_cr_max  = 173;
 
     // Apply the calculateOptionMatrix function to the images generated by the video camera
-    listener = cv_add_to_device(&GROUND_FOLLOWER_CAMERA, createHistogram);
+    listener = cv_add_to_device(&GROUND_FOLLOWER_CAMERA, calculateOptionMatrix);
 }
 
 

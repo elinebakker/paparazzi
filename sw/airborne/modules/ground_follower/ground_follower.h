@@ -22,6 +22,8 @@ extern uint8_t color_cb_max;
 extern uint8_t color_cr_min;
 extern uint8_t color_cr_max;
 
+extern uint8_t performGroundScan;
+
 extern uint8_t orange_avoider_safeToGoForwards;
 
 extern void ground_follower_init(void);
