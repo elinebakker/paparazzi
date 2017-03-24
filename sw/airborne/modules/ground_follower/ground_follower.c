@@ -86,12 +86,13 @@ float findBestDirection(void){
 
     }
 
-    int threshold=150;
+    int threshold=0;
 
     int pixels_center=g_pixels[steps/2];
     float direction_deg=0.0;
     int max_value=0;
     for (int x=0; x<steps; x++){
+        threshold=abs((steps/2)-x)*150;
         if (x!=steps/2 && g_pixels[x]>max_value && (g_pixels[x]-threshold)>pixels_center){
             max_value=g_pixels[x];
             direction_deg=(float) -20.0+((40.0/(steps-1))*x);
@@ -176,8 +177,15 @@ float findBestDirection(void){
 struct image_t *calculateOptionMatrix(struct image_t *input_img)
 {
     if(performGroundScan) {
+        // This part resets the window for panning
+        isp_request_statistics_yuv_window( MT9F002_INITIAL_OFFSET_X-500, MT9F002_INITIAL_OFFSET_X + MT9F002_SENSOR_WIDTH, MT9F002_INITIAL_OFFSET_Y, MT9F002_INITIAL_OFFSET_Y + MT9F002_SENSOR_HEIGHT, 0, 0);
+        isp_set_statistics_yuv_window();
+
         createHistogram(input_img);
         performGroundScan = 0;
+        // Once the histogram is generated, this part pans it back to its original state.
+        // isp_request_statistics_yuv_window( MT9F002_INITIAL_OFFSET_X, MT9F002_INITIAL_OFFSET_X + MT9F002_SENSOR_WIDTH, MT9F002_INITIAL_OFFSET_Y, MT9F002_INITIAL_OFFSET_Y + MT9F002_SENSOR_HEIGHT, 0, 0);
+        // isp_set_statistics_yuv_window();
     }
     uint8_t *source = input_img->  buf;  // Go trough all the pixels
     // VERBOSE_PRINT("h:%d , w:%d",input_img->h, input_img->w);
