@@ -128,7 +128,7 @@ float findBestDirection(bool flying) {
             direction_deg = directionMatrix[w];
         }
     }
-    DOWNLINK_SEND_PAYLOAD_FLOAT(DefaultChannel, DefaultDevice, 1, direction_deg);
+    DOWNLINK_SEND_PAYLOAD_FLOAT(DefaultChannel, DefaultDevice, 1, &direction_deg);
     return direction_deg;
 }
 
