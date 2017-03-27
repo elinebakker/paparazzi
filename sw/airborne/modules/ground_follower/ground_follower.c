@@ -109,7 +109,7 @@ float findBestDirection(bool flying) {
         directionMatrix[y] = -(imageWidth / 2 + stepWidth / 2) +
                              stepWidth * y; // Initial point (half a step from the left boundary plus stepsize)
 
-        threshold = (float) abs(thresholdSlope * directionMatrix[y]) + conf_baseThreshold;
+        threshold = (float) abs(conf_thresholdSlope * directionMatrix[y]) + conf_baseThreshold;
         if (flying) {
             g_pixels_updated[y] = g_pixels[y] - threshold;
         } else {
