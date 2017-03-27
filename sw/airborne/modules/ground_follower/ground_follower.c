@@ -49,6 +49,9 @@ int conf_vision_fuzzy_ramp_y = 5;
 int conf_vision_fuzzy_ramp_u = 5;
 int conf_vision_fuzzy_ramp_v = 5;
 
+// Define boxes
+int
+
 float conf_vision_safeToGoForwards_threshold = 0.80; // As a percentage
 
 // Variables required for control
@@ -58,7 +61,7 @@ uint8_t orange_avoider_safeToGoForwards        = false;
 float optionMatrix[240][520]; // The values in this matrix should be the sum of the number of pixels which are found to be 'ground' in the rectangle cornered by the x,y position and the top left corner.
 
 bool checkIfSafeToGoForwards() {
-    orange_avoider_safeToGoForwards = findPercentageGround(0, 90, 210, 310) > conf_vision_safeToGoForwards_threshold;
+    orange_avoider_safeToGoForwards = findPercentageGround(0, 90, 200, 320) > conf_vision_safeToGoForwards_threshold;
     return orange_avoider_safeToGoForwards;
 }
 
@@ -194,8 +197,8 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
     }
 
     // Draw boxes
-    drawRectangle(input_img,0, 90, 210, 310);
-    drawRectangle(input_img,0, 200, 210, 310);
+    drawRectangle(input_img,0, 90, 200, 320);
+    drawRectangle(input_img,0, 200, 200, 310);
 
     return input_img;
 }
