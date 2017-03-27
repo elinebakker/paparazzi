@@ -59,7 +59,7 @@
         </module>
         <module name="controller" />
         <module name="video_rtp_stream">
-            <configure name="VIEWVIDEO_HOST" value="192.168.42.23" />
+            <configure name="VIEWVIDEO_HOST" value="192.168.42.86" />
             <configure name="VIEWVIDEO_BROADCAST" value="FALSE" />
             <define name="VIEWVIDEO_CAMERA" value="front_camera" />
             <define name="VIEWVIDEO_SHOT_PATH" value="/data/ftp/internal_000" />
@@ -194,7 +194,7 @@
     <section name="GUIDANCE_H" prefix="GUIDANCE_H_">
         <!-- Good weather -->
         <define name="MAX_BANK" value="20" unit="deg" />
-        <define name="REF_MAX_SPEED" value="2" unit="m/s" />
+        <define name="REF_MAX_SPEED" value="4" unit="m/s" />
         <!-- Bad weather -->
         <!-- define name="MAX_BANK" value="32" unit="deg"/ -->
         <define name="PGAIN" value="120" />
