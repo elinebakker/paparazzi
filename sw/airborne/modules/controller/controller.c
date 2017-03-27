@@ -16,6 +16,7 @@
 #include "firmwares/rotorcraft/navigation.h"
 
 #include "generated/flight_plan.h"
+#include "subsystems/datalink/telemetry.h"
 //#include "modules/computer_vision/colorfilter.h"
 //#include "modules/controller/controller.h"
 
@@ -57,21 +58,23 @@ void controller_periodic() {
         bestDirection = findBestDirection(true);
         VERBOSE_PRINT("The best direction is: %f\n", bestDirection);
         // Limits on the max yaw
+        moveDistance = 0.5;
         if(bestDirection>15.0){
             bestDirection = 15.0;
+            moveDistance = 0.0;
         } else if(bestDirection<-15.0){
             bestDirection = -15.0;
+            moveDistance = 0.0;
         }
-        if(abs(bestDirection)>1.0 && looping_counter % 10 == 0){
+        if(abs(bestDirection)>1.0 && looping_counter % 50 == 0){
             VERBOSE_PRINT("Found a better direction, turning %f deg\n",bestDirection);
             int bestdir = (int) bestDirection;
-            moveDistance = 0.5;
-            //increase_nav_heading(&nav_heading, bestdir);
+            increase_nav_heading(&nav_heading, bestdir);
             moveWaypointForward(WP_GOAL, moveDistance, bestdir);
             moveWaypointForward(WP_TRAJECTORY, 1.25 * moveDistance, bestdir);
             nav_set_heading_towards_waypoint(WP_GOAL);
         } else {
-            moveDistance = fmin(maxDistance, 4.5 * DetermineTrajectoryConfidence() + 0.1);
+            moveDistance = fmax(fmin(maxDistance, 10 * DetermineTrajectoryConfidence() - 8),0.1);
             VERBOSE_PRINT("Forward\n");
             moveWaypointForward(WP_GOAL, moveDistance, 0.0);
             moveWaypointForward(WP_TRAJECTORY, 1.25 * moveDistance, 0.0);
@@ -82,13 +85,21 @@ void controller_periodic() {
         VERBOSE_PRINT("Pause for a little\n");
         waypoint_set_here_2d(WP_GOAL);
         waypoint_set_here_2d(WP_TRAJECTORY);
-        bestDirection = findBestDirection(false);
+        //bestDirection = findBestDirection(false);
+
+        increase_nav_heading(&nav_heading, incrementForAvoidance);
+        /*// Limits on the max yaw
+        if(bestDirection>15.0){
+            bestDirection = 15.0;
+        } else if(bestDirection<-15.0){
+            bestDirection = -15.0;
+        }
 
         if(abs(bestDirection)>1.0){
             increase_nav_heading(&nav_heading, bestDirection);
         } else {
             increase_nav_heading(&nav_heading, incrementForAvoidance);
-        }
+        }*/
 
 /*        if(trajectoryConfidence > 5){
             trajectoryConfidence -= 4;

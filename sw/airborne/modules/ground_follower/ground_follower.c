@@ -43,21 +43,22 @@ uint8_t color_cr_max = 0;
 
 
 // Configuration vars
-float conf_vision_init_y = 0.99;
-float conf_vision_init_u = 0.98;
-float conf_vision_init_v = 0.98;
+float conf_vision_init_y = 0.95;
+float conf_vision_init_u = 0.96;
+float conf_vision_init_v = 0.96;
 
 // Config vars for FindBestDirection function
 int conf_steps = 15; // Amount of boxes the image is divided into.
-int conf_baseThreshold = 150; // Threshold of going forward in pixels
-float conf_thresholdSlope = 5; // slope of threshold line in pixels per degree
+int conf_baseThreshold = 50; // Threshold of going forward in pixels
+float conf_thresholdSlope = 10; // slope of threshold line in pixels per degree
+float conf_vision_directbox_height = 0.95;
 
 // Config vars GetFuzzyValues function
 int conf_vision_fuzzy_ramp_y = 5;
 int conf_vision_fuzzy_ramp_u = 5;
 int conf_vision_fuzzy_ramp_v = 5;
 
-float conf_vision_safeToGoForwards_threshold = 0.80; // As a percentage
+float conf_vision_safeToGoForwards_threshold = 0.85; // As a percentage
 
 // Variables required for control
 uint8_t performGroundScan = 0;
@@ -66,7 +67,7 @@ uint8_t orange_avoider_safeToGoForwards        = false;
 float optionMatrix[240][520]; // The values in this matrix should be the sum of the number of pixels which are found to be 'ground' in the rectangle cornered by the x,y position and the top left corner.
 
 bool checkIfSafeToGoForwards() {
-    orange_avoider_safeToGoForwards = findPercentageGround(0, 90, 200, 320) > conf_vision_safeToGoForwards_threshold;
+    orange_avoider_safeToGoForwards = findPercentageGround(0, 130, 120, 400) > conf_vision_safeToGoForwards_threshold;
     return orange_avoider_safeToGoForwards;
 }
 
@@ -78,7 +79,7 @@ float findBestDirection(bool flying) {
     int y_offset_max;
 
     int x_offset_min = 0;
-    int x_offset_max = height_x * 0.5; // Take 50% of image (bottom half)
+    int x_offset_max = height_x * conf_vision_directbox_height; // Take 50% of image (bottom half)
 
     int g_pixels[conf_steps - 1];
     int g_pixels_updated[conf_steps - 1];
@@ -230,9 +231,9 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
     }
 
     // Draw boxes
-    drawRectangle(input_img,0, 90, 200, 320); // Safe to go forward
-    drawRectangle(input_img,0, 200, 210, 310); // Speed
-    drawRectangle(input_img, 0, 120, 243, 277); // Middle step of directionFinder.
+    drawRectangle(input_img,0, 130, 120, 400); // Safe to go forward
+    drawRectangle(input_img,0, 239, 150, 370); // Speed
+    drawRectangle(input_img, 0, 192, 243, 277); // Middle step of directionFinder.
 
 
     return input_img;
@@ -316,7 +317,7 @@ float findPercentageGround(int x_min, int x_max, int y_min, int y_max){
     sum =  optionMatrix[x_max][y_max]-optionMatrix[x_min][y_max]-optionMatrix[x_max][y_min]+optionMatrix[x_min][y_min];
     //VERBOSE_PRINT("%d-%d-%d+%d=%d",optionMatrix[x_max][y_max],optionMatrix[x_min][y_max],optionMatrix[x_max][y_min],optionMatrix[x_min][y_min],sum);
     percentage = sum/((x_max-x_min)*(y_max-y_min)*1.0);
-    VERBOSE_PRINT("Ground percentage x:%d-%d, y%d-%d%f\n",x_min,x_max,y_min,y_max,percentage);
+    //VERBOSE_PRINT("Ground percentage x:%d-%d, y%d-%d=%f\n",x_min,x_max,y_min,y_max,percentage);
     return percentage;
 }
 
@@ -493,9 +494,9 @@ void ground_follower_init()
 float DetermineTrajectoryConfidence()
 {
     int x_min_tc=0;
-    int x_max_tc=200;
-    int y_min_tc=210;
-    int y_max_tc=310;
+    int x_max_tc=239;
+    int y_min_tc=150;
+    int y_max_tc=370;
     float GroundPercentage;
     GroundPercentage=findPercentageGround(x_min_tc, x_max_tc, y_min_tc, y_max_tc);
 
