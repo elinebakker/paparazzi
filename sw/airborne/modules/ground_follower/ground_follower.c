@@ -41,9 +41,13 @@ uint8_t color_cb_max = 0;
 uint8_t color_cr_min = 0;
 uint8_t color_cr_max = 0;
 
+
+// Configuration variables
 float conf_vision_init_y = 0.99;
 float conf_vision_init_u = 0.98;
 float conf_vision_init_v = 0.98;
+
+int conf_steps = 15;
 
 int conf_vision_fuzzy_ramp_y = 5;
 int conf_vision_fuzzy_ramp_u = 5;
@@ -73,16 +77,22 @@ float findBestDirection(void){
     int y_offset_max;
 
     int x_offset_min=0;
-    int x_offset_max=(height_x/4)*2;
+    int x_offset_max=height_x * 0.5; // Take 50% of image (bottom half)
 
 
-    int steps=5;
-    int g_pixels[steps-1];
-    int pixel_step=width_y/steps;
-    if ( pixel_step % 2 != 0 ){
-        pixel_step=pixel_step+1;
-    }
-    for (int y = 0; y < steps; y++) {
+    int g_pixels[conf_steps-1];
+    int g_pixels_updated[conf_steps-1];
+    int pixel_step=width_y/conf_steps;
+    int imageWidth = 90;
+    int baseThreshold = 150;
+
+    float direction_deg=0.0;
+
+
+    //if ( pixel_step % 2 != 0 ){
+    //    pixel_step=pixel_step+1;
+    //}
+    for (int y = 0; y < conf_steps; y++) {
 
         //first set frame
         y_offset_min=pixel_step*y;
@@ -91,13 +101,30 @@ float findBestDirection(void){
         if (y_offset_max>518){
             y_offset_max=518;
         }
-
-
         g_pixels[y]=optionMatrix[x_offset_max][y_offset_max]-optionMatrix[x_offset_min][y_offset_max]-optionMatrix[x_offset_max][y_offset_min]+optionMatrix[x_offset_min][y_offset_min];
 
 
+        float stepWidth = (float) imageWidth / conf_steps;
+        directionMatrix[y] =  -(imageWidth/2 + stepWidth/2) + stepWidth*y; // Initial point (half a step from the left boundary plus stepsize)
+
+        float thresholdSlope = 1; // slope of threshold line
+        threshold = abs(thresholdSlope*directionmatrix[y])+baseThreshold;
+
+        g_pixels_updated[y]=g_pixels[y]-threshold;
     }
 
+    for (int w = 0; w <conf_steps; w++) {
+        int g_pixels_updated_max = 0;
+        if (g_pixels_updated_[w]>g_pixels_updated_max) {
+            g_pixels_updated_max = g_pixels_updated[w];
+            direction_deg = directionmatrix[w];
+        }
+    }
+    return direction_deg;
+}
+
+
+/*
     int threshold=0;
 
     int pixels_center=g_pixels[steps/2];
@@ -116,9 +143,8 @@ float findBestDirection(void){
 
 
     }
+*/
 
-    return direction_deg;
-}
 
 
 
@@ -206,6 +232,8 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
 float getFuzzyValue(int Y, int U, int V) {
     float F;
     float Y_f,V_f,U_f;
+
+    // Determine Y bounds
     int color_lum_min_lower = color_lum_min - conf_vision_fuzzy_ramp_y; // Determine upper and lower bounds per value.
     int color_lum_min_upper = color_lum_min;
     int color_lum_max_lower = color_lum_max; // Determine upper and lower bounds per value.
