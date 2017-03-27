@@ -42,18 +42,20 @@ uint8_t color_cr_min = 0;
 uint8_t color_cr_max = 0;
 
 
-// Configuration variables
+// Configuration vars
 float conf_vision_init_y = 0.99;
 float conf_vision_init_u = 0.98;
 float conf_vision_init_v = 0.98;
 
-int conf_steps = 15;
+// Config vars for FindBestDirection function
+int conf_steps = 15; // Amount of boxes the image is divided into.
+int conf_baseThreshold = 150; // Threshold of going forward in pixels
+float conf_thresholdSlope = 5; // slope of threshold line in pixels per degree
 
+// Config vars GetFuzzyValues function
 int conf_vision_fuzzy_ramp_y = 5;
 int conf_vision_fuzzy_ramp_u = 5;
 int conf_vision_fuzzy_ramp_v = 5;
-
-// Define boxes
 
 float conf_vision_safeToGoForwards_threshold = 0.80; // As a percentage
 
@@ -78,13 +80,11 @@ float findBestDirection(bool flying) {
     int x_offset_min = 0;
     int x_offset_max = height_x * 0.5; // Take 50% of image (bottom half)
 
-
     int g_pixels[conf_steps - 1];
     int g_pixels_updated[conf_steps - 1];
     float directionMatrix[conf_steps - 1];
     int pixel_step = width_y / conf_steps;
-    int imageWidth = 90;
-    int baseThreshold = 150;
+    int imageWidth = 90; // Width of camera image is 90 degrees. Determined empirically
     float threshold;
     float direction_deg = 0.0;
 
@@ -109,9 +109,7 @@ float findBestDirection(bool flying) {
         directionMatrix[y] = -(imageWidth / 2 + stepWidth / 2) +
                              stepWidth * y; // Initial point (half a step from the left boundary plus stepsize)
 
-        float thresholdSlope = 5; // slope of threshold line
-
-        threshold = (float) abs(thresholdSlope * directionMatrix[y]) + baseThreshold;
+        threshold = (float) abs(thresholdSlope * directionMatrix[y]) + conf_baseThreshold;
         if (flying) {
             g_pixels_updated[y] = g_pixels[y] - threshold;
         } else {
