@@ -109,12 +109,17 @@ float findBestDirection(bool flying) {
         directionMatrix[y] = -(imageWidth / 2 + stepWidth / 2) +
                              stepWidth * y; // Initial point (half a step from the left boundary plus stepsize)
 
-        float thresholdSlope = 1; // slope of threshold line
+        float thresholdSlope = 5; // slope of threshold line
 
         threshold = (float) abs(thresholdSlope * directionMatrix[y]) + baseThreshold;
+        if (flying) {
+            g_pixels_updated[y] = g_pixels[y] - threshold;
+        } else {
+            g_pixels_updated[y] = g_pixels[y];
+        }
 
-        g_pixels_updated[y] = g_pixels[y] - threshold;
     }
+
     int g_pixels_updated_max = 0;
     for (int w = 0; w < conf_steps; w++) {
 
@@ -123,6 +128,7 @@ float findBestDirection(bool flying) {
             direction_deg = directionMatrix[w];
         }
     }
+    DOWNLINK_SEND_PAYLOAD_FLOAT(DefaultChannel, DefaultDevice, 1, direction_deg);
     return direction_deg;
 }
 
@@ -226,8 +232,10 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
     }
 
     // Draw boxes
-    drawRectangle(input_img,0, 90, 200, 320);
-    drawRectangle(input_img,0, 200, 200, 310);
+    drawRectangle(input_img,0, 90, 200, 320); // Safe to go forward
+    drawRectangle(input_img,0, 200, 210, 310); // Speed
+    drawRectangle(input_img, 0, 120, 243, 277); // Middle step of directionFinder.
+
 
     return input_img;
 }
