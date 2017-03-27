@@ -22,7 +22,7 @@
 #include "modules/computer_vision/lib/vision/image.h"
 #include "subsystems/datalink/telemetry.h"
 
-#define GROUND_FOLLOWER_VERBOSE TRUE
+#define GROUND_FOLLOWER_VERBOSE true
 
 #define PRINT(string,...) fprintf(stderr, "[ground_follower->%s()] " string,__FUNCTION__ , ##__VA_ARGS__)
 #if GROUND_FOLLOWER_VERBOSE
@@ -41,15 +41,24 @@ uint8_t color_cb_max = 0;
 uint8_t color_cr_min = 0;
 uint8_t color_cr_max = 0;
 
-uint8_t performGroundScan = 0;
+float conf_vision_init_y = 0.99;
+float conf_vision_init_u = 0.98;
+float conf_vision_init_v = 0.98;
+
+int conf_vision_fuzzy_ramp_y = 5;
+int conf_vision_fuzzy_ramp_u = 5;
+int conf_vision_fuzzy_ramp_v = 5;
+
+float conf_vision_safeToGoForwards_threshold = 0.80; // As a percentage
 
 // Variables required for control
+uint8_t performGroundScan = 0;
 uint8_t orange_avoider_safeToGoForwards        = false;
-float tresholdColorCount                       = 0.80; // As a percentage
+
 float optionMatrix[240][520]; // The values in this matrix should be the sum of the number of pixels which are found to be 'ground' in the rectangle cornered by the x,y position and the top left corner.
 
 bool checkIfSafeToGoForwards() {
-    orange_avoider_safeToGoForwards = findPercentageGround(0, 90, 210, 310) > tresholdColorCount;
+    orange_avoider_safeToGoForwards = findPercentageGround(0, 90, 210, 310) > conf_vision_safeToGoForwards_threshold;
     return orange_avoider_safeToGoForwards;
 }
 
@@ -93,6 +102,9 @@ float findBestDirection(void){
     int max_value=0;
     for (int x=0; x<steps; x++){
         threshold=abs((steps/2)-x)*150;
+        if (x==0 || x==4){
+            threshold=450;
+        }
         if (x!=steps/2 && g_pixels[x]>max_value && (g_pixels[x]-threshold)>pixels_center){
             max_value=g_pixels[x];
             direction_deg=(float) -20.0+((40.0/(steps-1))*x);
@@ -160,7 +172,7 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
                 //VERBOSE_PRINT("(%d,%d)\n",x,y);
             F=getFuzzyValue(Y,U,V);
             optionMatrix[x][y] +=F;
-            float fuzzy_threshold = 0.8;
+            float fuzzy_threshold = -0.8;
 
             if (F > fuzzy_threshold) {
                 // Change color of the ground pixels
@@ -183,7 +195,7 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
 
     // Draw boxes
     drawRectangle(input_img,0, 90, 210, 310);
-
+    drawRectangle(input_img,0, 200, 210, 310);
 
     return input_img;
 }
@@ -191,23 +203,22 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
 float getFuzzyValue(int Y, int U, int V) {
     float F;
     float Y_f,V_f,U_f;
-    int rampLength = 10; // Set fuzzy rampLength
-    int color_lum_min_lower = color_lum_min; // Determine upper and lower bounds per value.
-    int color_lum_min_upper = color_lum_min + rampLength;
-    int color_lum_max_lower = color_lum_max - rampLength; // Determine upper and lower bounds per value.
-    int color_lum_max_upper = color_lum_max;
+    int color_lum_min_lower = color_lum_min - conf_vision_fuzzy_ramp_y; // Determine upper and lower bounds per value.
+    int color_lum_min_upper = color_lum_min;
+    int color_lum_max_lower = color_lum_max; // Determine upper and lower bounds per value.
+    int color_lum_max_upper = color_lum_max + conf_vision_fuzzy_ramp_y;
 
     // Determine U bounds
-    int color_cb_min_lower = color_cb_min; // Determine upper and lower bounds per value.
-    int color_cb_min_upper = color_cb_min + rampLength;
-    int color_cb_max_lower = color_cb_max - rampLength; // Determine upper and lower bounds per value.
-    int color_cb_max_upper = color_cb_max;
+    int color_cb_min_lower = color_cb_min - conf_vision_fuzzy_ramp_u; // Determine upper and lower bounds per value.
+    int color_cb_min_upper = color_cb_min;
+    int color_cb_max_lower = color_cb_max; // Determine upper and lower bounds per value.
+    int color_cb_max_upper = color_cb_max + conf_vision_fuzzy_ramp_u;
 
     // Determine V bounds
-    int color_cr_min_lower = color_cr_min; // Determine upper and lower bounds per value.
-    int color_cr_min_upper = color_cr_min + rampLength;
-    int color_cr_max_lower = color_cr_max - rampLength; // Determine upper and lower bounds per value.
-    int color_cr_max_upper = color_cr_max;
+    int color_cr_min_lower = color_cr_min - conf_vision_fuzzy_ramp_v; // Determine upper and lower bounds per value.
+    int color_cr_min_upper = color_cr_min;
+    int color_cr_max_lower = color_cr_max; // Determine upper and lower bounds per value.
+    int color_cr_max_upper = color_cr_max + conf_vision_fuzzy_ramp_v;
 
 
     // Determine Fuzzy Y value
@@ -219,8 +230,8 @@ float getFuzzyValue(int Y, int U, int V) {
         Y_f = 1 - (1 / color_lum_min * (color_lum_min - color_lum_min_lower)); // Assign a value from 1 to 0.
     }
 
-    Y_f = (Y <= color_lum_min_lower) ? 0 : Y_f; // If Y is smaller than the lowest bound, assign 0, otherwise remain old value.
-    Y_f = (Y >= color_lum_max_upper) ? 0 : Y_f;// If Y is larger than the highest bound, assign 0, otherwise remain old value.
+    Y_f = (Y <= color_lum_min_lower) ? 0.0 : Y_f; // If Y is smaller than the lowest bound, assign 0, otherwise remain old value.
+    Y_f = (Y >= color_lum_max_upper) ? 0.0 : Y_f;// If Y is larger than the highest bound, assign 0, otherwise remain old value.
 
     // Determine Fuzzy U value
     U_f = 1; //  When U is larger than the min_upper bound or lower than the max_lower bound.
@@ -231,8 +242,8 @@ float getFuzzyValue(int Y, int U, int V) {
         U_f = 1 - (1 / color_cb_min * (color_cb_min - color_cb_min_lower)); // Assign a value from 1 to 0.
     }
 
-    U_f=(U <= color_cb_min_lower) ? 0 : U_f; // If U is smaller than the lowest bound, assign 0, otherwise remain old value.
-    U_f=(U >= color_cb_max_upper) ? 0 : U_f; // If U is larger than the highest bound, assign 0, otherwise remain old value.
+    U_f=(U <= color_cb_min_lower) ? 0.0 : U_f; // If U is smaller than the lowest bound, assign 0, otherwise remain old value.
+    U_f=(U >= color_cb_max_upper) ? 0.0 : U_f; // If U is larger than the highest bound, assign 0, otherwise remain old value.
 
     // Determine Fuzzy V value
     V_f = 1; //  When V is larger than the min_upper bound or lower than the max_lower bound.
@@ -243,8 +254,8 @@ float getFuzzyValue(int Y, int U, int V) {
         V_f = 1 - (1 / color_cr_min * (color_cr_min - color_cr_min_lower)); // Assign a value from 1 to 0.
     }
 
-    V_f = (V <= color_cr_min_lower) ? 0 : V_f; // If V is smaller than the lowest bound, assign 0, otherwise remain old value.
-    V_f = (V >= color_cr_max_upper) ? 0 : V_f; // If V is larger than the highest bound, assign 0, otherwise remain old value.
+    V_f = (V <= color_cr_min_lower) ? 0.0 : V_f; // If V is smaller than the lowest bound, assign 0, otherwise remain old value.
+    V_f = (V >= color_cr_max_upper) ? 0.0 : V_f; // If V is larger than the highest bound, assign 0, otherwise remain old value.
 
     F = Y_f*U_f*V_f;
     return F;
@@ -265,7 +276,7 @@ float findPercentageGround(int x_min, int x_max, int y_min, int y_max){
     sum =  optionMatrix[x_max][y_max]-optionMatrix[x_min][y_max]-optionMatrix[x_max][y_min]+optionMatrix[x_min][y_min];
     //VERBOSE_PRINT("%d-%d-%d+%d=%d",optionMatrix[x_max][y_max],optionMatrix[x_min][y_max],optionMatrix[x_max][y_min],optionMatrix[x_min][y_min],sum);
     percentage = sum/((x_max-x_min)*(y_max-y_min)*1.0);
-    VERBOSE_PRINT("Ground percentage %f\n",percentage);
+    VERBOSE_PRINT("Ground percentage x:%d-%d, y%d-%d%f\n",x_min,x_max,y_min,y_max,percentage);
     return percentage;
 }
 
@@ -326,7 +337,7 @@ int * find_limits(int a[], int n, float margin){
         for(i=lowerlim; i<=(upperlim);i++){
             range += a[i];
         }
-        //VERBOSE_PRINT("l:%d u:%d r:%d s:%d n:%d %f\n",lowerlim, upperlim, range, sum, n, ratio);
+        VERBOSE_PRINT("l:%d u:%d r:%d s:%d n:%d %f\n",lowerlim, upperlim, range, sum, n, ratio);
     ratio = range/(float)sum;       
     }
 
@@ -365,15 +376,15 @@ int * find_limits(int a[], int n, float margin){
         int *results;
         int n = 256;
         float margin = 0.9;
-        results = find_limits(histo_y, n, 0.99);
+        results = find_limits(histo_y, n, conf_vision_init_y);
         ymax = results[1];
         ymin = results[0];
 
-        results = find_limits(histo_v, n, 0.97);
+        results = find_limits(histo_v, n, conf_vision_init_v);
         vmax = results[1];
         vmin = results[0];
 
-        results = find_limits(histo_u, n, 0.97);
+        results = find_limits(histo_u, n, conf_vision_init_u);
         umax = results[1];
         umin = results[0];
         VERBOSE_PRINT("\n Y range %d to %d\n U range %d to %d\n V range %d to %d\n", ymin, ymax, umin, umax, vmin,
@@ -392,7 +403,7 @@ int * find_limits(int a[], int n, float margin){
     }
 
 void drawRectangle(struct image_t *input_img, int x_min, int x_max, int y_min, int y_max) {
-
+    static uint8_t color[4] = {255, 255, 255, 255};
     struct point_t BL = {
             x_min,
             y_min
@@ -410,10 +421,10 @@ void drawRectangle(struct image_t *input_img, int x_min, int x_max, int y_min, i
             y_min
     };
 
-    image_draw_line(input_img, &BL, &TL);
-    image_draw_line(input_img, &TL, &TR);
-    image_draw_line(input_img, &TR, &BR);
-    image_draw_line(input_img, &BR, &BL);
+    image_draw_line_color(input_img, &BL, &TL, color);
+    image_draw_line_color(input_img, &TL, &TR, color);
+    image_draw_line_color(input_img, &TR, &BR, color);
+    image_draw_line_color(input_img, &BR, &BL, color);
 }
 
 
@@ -439,10 +450,10 @@ void ground_follower_init()
 
 
 
-float DetermineTrajectoryConfindence()
+float DetermineTrajectoryConfidence()
 {
     int x_min_tc=0;
-    int x_max_tc=120;
+    int x_max_tc=200;
     int y_min_tc=210;
     int y_max_tc=310;
     float GroundPercentage;

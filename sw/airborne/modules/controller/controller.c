@@ -23,7 +23,7 @@
 //#include "modules/orange_avoider/orange_avoider.c"
 
 // Define verbose mode which will write messages to the telemetry when activated.
-#define CONTROLLER_VERBOSE FALSE
+#define CONTROLLER_VERBOSE true
 
 #define PRINT(string,...) fprintf(stderr, "[controller->%s()] " string,__FUNCTION__ , ##__VA_ARGS__)
 #if CONTROLLER_VERBOSE
@@ -78,18 +78,18 @@ void controller_periodic() {
         waypoint_set_here_2d(WP_TRAJECTORY);
         bestDirection = findBestDirection();
 
-/*        if(abs(bestDirection)>1.0){
+        if(abs(bestDirection)>1.0){
             increase_nav_heading(&nav_heading, bestDirection);
         } else {
             increase_nav_heading(&nav_heading, incrementForAvoidance);
-        }*/
+        }
 
-        if(trajectoryConfidence > 5){
+/*        if(trajectoryConfidence > 5){
             trajectoryConfidence -= 4;
         }
         else{
             trajectoryConfidence = 1;
-        }
+        }*/
     }
     return;
 }

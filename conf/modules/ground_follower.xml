@@ -24,6 +24,19 @@
   <init fun="ground_follower_init()"/>
   <makefile>
     <file name="ground_follower.c"/>
+    <flag name="LDFLAGS" value="L$(PAPARAZZI_HOME)/sw/ext/opencv_bebop/install/lib" />
+    <flag name="LDFLAGS" value="lopencv_world" />
+    <flag name="LDFLAGS" value="L$(PAPARAZZI_HOME)/sw/ext/opencv_bebop/install/share/OpenCV/3rdparty/lib" />
+    <flag name="LDFLAGS" value="ltegra_hal" />
+    <flag name="LDFLAGS" value="lzlib" />
+    <flag name="LDFLAGS" value="llibjpeg" />
+    <flag name="LDFLAGS" value="llibpng" />
+    <flag name="LDFLAGS" value="llibtiff" />
+    <flag name="LDFLAGS" value="lstdc++" />
+    <flag name="LDFLAGS" value="ldl" />
+    <flag name="LDFLAGS" value="lm" />
+    <flag name="LDFLAGS" value="lpthread" />
+    <flag name="LDFLAGS" value="lrt" />
   </makefile>
 
 

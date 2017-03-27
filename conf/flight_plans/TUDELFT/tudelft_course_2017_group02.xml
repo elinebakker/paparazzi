@@ -86,6 +86,9 @@
             <while cond="LessThan(NavBlockTime(), 2)"/>
             <call_once fun="NavSetAltitudeReferenceHere()"/>
         </block>
+        <block key="u" name="UpdateGround">
+            <call_once fun="updateGroundFilterSettings()"/>
+        </block>
         <block name="Holding point">
             <call_once fun="NavKillThrottle()"/>
             <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
@@ -100,9 +103,6 @@
             <exception cond="GetPosAlt() > 1.0" deroute="Standby"/>
             <call_once fun="NavSetWaypointHere(WP_CLIMB)"/>
             <stay climb="nav_climb_vspeed" vmode="climb" wp="CLIMB"/>
-        </block>
-        <block key="u" name="UpdateGround">
-            <call_once fun="updateGroundFilterSettings()"/>
         </block>
         <block key="s" name="Standby" strip_button="Standby" strip_icon="home.png">
             <call_once fun="NavSetWaypointHere(WP_STDBY)"/>
