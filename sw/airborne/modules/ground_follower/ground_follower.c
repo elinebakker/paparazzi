@@ -439,4 +439,18 @@ void ground_follower_init()
 
 
 
+float DetermineTrajectoryConfindence()
+{
+    int x_min_tc=0;
+    int x_max_tc=120;
+    int y_min_tc=210;
+    int y_max_tc=310;
+    float GroundPercentage;
+    GroundPercentage=findPercentageGround(x_min_tc, x_max_tc, y_min_tc, y_max_tc);
+
+    return GroundPercentage;
+}
+
+
+
 
