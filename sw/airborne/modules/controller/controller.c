@@ -34,7 +34,7 @@
 
 // Define initial variables
 uint8_t safeToGoForwards        = false;
-float incrementForAvoidance     = 5.0;
+float incrementForAvoidance     = 10.0;
 uint16_t trajectoryConfidence   = 1;
 float maxDistance               = 2;
 
@@ -54,8 +54,14 @@ void controller_periodic() {
     float moveDistance;
     safeToGoForwards = checkIfSafeToGoForwards();
     if(safeToGoForwards){
-            bestDirection = findBestDirection();
-            VERBOSE_PRINT("The best direction is: %f\n", bestDirection);
+        bestDirection = findBestDirection(true);
+        VERBOSE_PRINT("The best direction is: %f\n", bestDirection);
+        // Limits on the max yaw
+        if(bestDirection>15.0){
+            bestDirection = 15.0;
+        } else if(bestDirection<-15.0){
+            bestDirection = -15.0;
+        }
         if(abs(bestDirection)>1.0 && looping_counter % 10 == 0){
             VERBOSE_PRINT("Found a better direction, turning %f deg\n",bestDirection);
             int bestdir = (int) bestDirection;
@@ -76,7 +82,7 @@ void controller_periodic() {
         VERBOSE_PRINT("Pause for a little\n");
         waypoint_set_here_2d(WP_GOAL);
         waypoint_set_here_2d(WP_TRAJECTORY);
-        bestDirection = findBestDirection();
+        bestDirection = findBestDirection(false);
 
         if(abs(bestDirection)>1.0){
             increase_nav_heading(&nav_heading, bestDirection);
