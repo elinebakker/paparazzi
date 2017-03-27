@@ -253,23 +253,23 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
 float getFuzzyValue(int Y, int U, int V) {
     float F;
     float Y_f,V_f,U_f;
-    int rampLength = 7; // Set fuzzy rampLength
-    int color_lum_min_lower = color_lum_min - rampLength / 2; // Determine upper and lower bounds per value.
-    int color_lum_min_upper = color_lum_min + rampLength / 2;
-    int color_lum_max_lower = color_lum_max - rampLength / 2; // Determine upper and lower bounds per value.
-    int color_lum_max_upper = color_lum_max + rampLength / 2;
+    int rampLength = 10; // Set fuzzy rampLength
+    int color_lum_min_lower = color_lum_min; // Determine upper and lower bounds per value.
+    int color_lum_min_upper = color_lum_min + rampLength;
+    int color_lum_max_lower = color_lum_max - rampLength; // Determine upper and lower bounds per value.
+    int color_lum_max_upper = color_lum_max;
 
     // Determine U bounds
-    int color_cb_min_lower = color_cb_min - rampLength / 2; // Determine upper and lower bounds per value.
-    int color_cb_min_upper = color_cb_min + rampLength / 2;
-    int color_cb_max_lower = color_cb_max - rampLength / 2; // Determine upper and lower bounds per value.
-    int color_cb_max_upper = color_cb_max + rampLength / 2;
+    int color_cb_min_lower = color_cb_min; // Determine upper and lower bounds per value.
+    int color_cb_min_upper = color_cb_min + rampLength;
+    int color_cb_max_lower = color_cb_max - rampLength; // Determine upper and lower bounds per value.
+    int color_cb_max_upper = color_cb_max;
 
     // Determine V bounds
-    int color_cr_min_lower = color_cr_min - rampLength / 2; // Determine upper and lower bounds per value.
-    int color_cr_min_upper = color_cr_min + rampLength / 2;
-    int color_cr_max_lower = color_cr_max - rampLength / 2; // Determine upper and lower bounds per value.
-    int color_cr_max_upper = color_cr_max + rampLength / 2;
+    int color_cr_min_lower = color_cr_min; // Determine upper and lower bounds per value.
+    int color_cr_min_upper = color_cr_min + rampLength;
+    int color_cr_max_lower = color_cr_max - rampLength; // Determine upper and lower bounds per value.
+    int color_cr_max_upper = color_cr_max;
 
 
     // Determine Fuzzy Y value
