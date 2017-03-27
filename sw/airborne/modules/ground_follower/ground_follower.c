@@ -107,73 +107,6 @@ float findBestDirection(void){
 
 
 
-/*
-float findBestDirection(void){
-    // bottom left
-    int x_offset_min_l;
-    int x_offset_max_l;
-    int y_offset_min_l;
-    int y_offset_max_l;
-
-    x_offset_min_l=0;
-    x_offset_max_l=120;
-    y_offset_min_l=0;
-    y_offset_max_l=173;
-
-    //bottom middle
-    int x_offset_min_m;
-    int x_offset_max_m;
-    int y_offset_min_m;
-    int y_offset_max_m;
-
-    x_offset_min_m=0;
-    x_offset_max_m=120;
-    y_offset_min_m=174;
-    y_offset_max_m=346;
-
-    //bottom right
-    int x_offset_min_r;
-    int x_offset_max_r;
-    int y_offset_min_r;
-    int y_offset_max_r;
-
-    x_offset_min_r=0;
-    x_offset_max_r=120;
-    y_offset_min_r=347;
-    y_offset_max_r=519;
-
-    //calculating number of green pixels
-    int g_pixels_left;
-    int g_pixels_middle;
-    int g_pixels_right;
-    float direction_deg;
-
-    g_pixels_left=optionMatrix[x_offset_max_l][y_offset_max_l]-optionMatrix[x_offset_min_l][y_offset_max_l]-optionMatrix[x_offset_max_l][y_offset_min_l]+optionMatrix[x_offset_min_l][y_offset_min_l];
-    g_pixels_middle=optionMatrix[x_offset_max_m][y_offset_max_m]-optionMatrix[x_offset_min_m][y_offset_max_m]-optionMatrix[x_offset_max_m][y_offset_min_m]+optionMatrix[x_offset_min_m][y_offset_min_m];
-    g_pixels_right=optionMatrix[x_offset_max_r][y_offset_max_r]-optionMatrix[x_offset_min_r][y_offset_max_r]-optionMatrix[x_offset_max_r][y_offset_min_r]+optionMatrix[x_offset_min_r][y_offset_min_r];
-
-
-    printf("pixels left %i ",g_pixels_left);
-    printf("pixels middel%i ",g_pixels_middle);
-    printf("pixels right %i \n",g_pixels_right);
-
-    int threshold=500;
-
-    if(g_pixels_left>g_pixels_right && g_pixels_left-g_pixels_middle>threshold) {
-        direction_deg = -10.0;
-
-    }else if (g_pixels_left<g_pixels_right && g_pixels_right-g_pixels_middle>threshold){
-        direction_deg = 10.0;
-
-    } else {
-        direction_deg = 0.0;
-    }
-
-    return direction_deg;
-
-}
-*/
-
 struct image_t *calculateOptionMatrix(struct image_t *input_img)
 {
     if(performGroundScan) {
@@ -232,11 +165,13 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
             if (F > fuzzy_threshold) {
                 // Change color of the ground pixels
                 if(x % 2 == 0) {
-                    //source[1] = 0;
+                    source[1] = (int)F*255;
                 } else {
+                    source[3] = (int)F*255;
                     source[0] = 88;        // U
                     source[2] = 255;        // V
                 }
+
             }
 
             if(x % 2 == 1 && x < (input_img->w-1)) {
@@ -245,6 +180,9 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
             }
         }
     }
+
+    // Draw boxes
+    drawRectangle(input_img,0, 90, 210, 310);
 
 
     return input_img;
@@ -452,6 +390,31 @@ int * find_limits(int a[], int n, float margin){
         return input_img;
         // return ymax, ymin, umin, umax, vmin, vmax; //change output
     }
+
+void drawRectangle(struct image_t *input_img, int x_min, int x_max, int y_min, int y_max) {
+
+    struct point_t BL = {
+            x_min,
+            y_min
+    };
+    struct point_t TL = {
+            x_min,
+            y_max
+    };
+    struct point_t TR = {
+            x_max,
+            y_max
+    };
+    struct point_t BR = {
+            x_max,
+            y_min
+    };
+
+    image_draw_line(input_img, &BL, &TL);
+    image_draw_line(input_img, &TL, &TR);
+    image_draw_line(input_img, &TR, &BR);
+    image_draw_line(input_img, &BR, &BL);
+}
 
 
 static void send_ground_follower_info(struct transport_tx *trans, struct link_device *dev)
