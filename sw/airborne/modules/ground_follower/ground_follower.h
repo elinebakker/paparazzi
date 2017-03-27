@@ -38,7 +38,7 @@ extern struct image_t *createHistogram(struct image_t *input_img);
 
 float findPercentageGround(int x_min, int x_max, int y_min, int y_max);
 
-float findBestDirection(void);
+float findBestDirection(bool);
 
 void updateGroundFilterSettings(void);
 
