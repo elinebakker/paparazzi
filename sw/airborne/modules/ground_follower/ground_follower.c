@@ -54,9 +54,9 @@ float conf_thresholdSlope = 10; // slope of threshold line in pixels per degree
 float conf_vision_directbox_height = 0.95;
 
 // Config vars GetFuzzyValues function
-int conf_vision_fuzzy_ramp_y = 5;
-int conf_vision_fuzzy_ramp_u = 10;
-int conf_vision_fuzzy_ramp_v = 10;
+int conf_vision_fuzzy_ramp_y = 15; // 5 -> Conservative settings.
+int conf_vision_fuzzy_ramp_u = 20; // 10
+int conf_vision_fuzzy_ramp_v = 20; // 10
 
 float conf_vision_safeToGoForwards_threshold = 0.80; // As a percentage
 

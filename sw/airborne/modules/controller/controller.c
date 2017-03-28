@@ -101,7 +101,7 @@ void controller_periodic() {
         total_incrementForAvoidance += incrementForAvoidance;
         VERBOSE_PRINT("TOTAL INCREMENT FOR AVOIDANde %f",total_incrementForAvoidance);
 
-        if (total_incrementForAvoidance>180){
+        if (total_incrementForAvoidance>20){
             NormalFrameWidth = false;
 
         }

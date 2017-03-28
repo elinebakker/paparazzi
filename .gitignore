@@ -193,3 +193,7 @@ tests/results/*
 
 # K-develop
 *.kate-swp
+
+sw/ext/opencv_bebop
+
+cmake-build-debug/CMakeFiles/clion-log\.txt
