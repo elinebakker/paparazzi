@@ -43,9 +43,9 @@ uint8_t color_cr_max = 0;
 
 
 // Configuration vars
-float conf_vision_init_y = 0.94;
-float conf_vision_init_u = 0.96;
-float conf_vision_init_v = 0.96;
+float conf_vision_init_y = 0.96;
+float conf_vision_init_u = 0.98;
+float conf_vision_init_v = 0.98;
 
 // Config vars for FindBestDirection function
 int conf_steps = 15; // Amount of boxes the image is divided into.
@@ -55,8 +55,8 @@ float conf_vision_directbox_height = 0.95;
 
 // Config vars GetFuzzyValues function
 int conf_vision_fuzzy_ramp_y = 5;
-int conf_vision_fuzzy_ramp_u = 5;
-int conf_vision_fuzzy_ramp_v = 5;
+int conf_vision_fuzzy_ramp_u = 10;
+int conf_vision_fuzzy_ramp_v = 10;
 
 float conf_vision_safeToGoForwards_threshold = 0.80; // As a percentage
 
