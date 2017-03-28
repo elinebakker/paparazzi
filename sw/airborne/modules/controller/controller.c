@@ -53,10 +53,14 @@ void controller_periodic() {
     VERBOSE_PRINT("--------------------------------------------------\n");
     float bestDirection;
     float moveDistance;
-    safeToGoForwards = checkIfSafeToGoForwards();
+    static float total_incrementForAvoidance;
+    static bool NormalFrameWidth = true;
+    safeToGoForwards = checkIfSafeToGoForwards(NormalFrameWidth);
     if(safeToGoForwards){
         bestDirection = findBestDirection(true);
         VERBOSE_PRINT("The best direction is: %f\n", bestDirection);
+        total_incrementForAvoidance= 0.0;
+
         // Limits on the max yaw
         moveDistance = 0.5;
         if(bestDirection>15.0){
@@ -66,7 +70,7 @@ void controller_periodic() {
             bestDirection = -15.0;
             moveDistance = 0.0;
         }
-        if(abs(bestDirection)>1.0 && looping_counter % 50 == 0){
+        if(abs(bestDirection)>1.0 && (looping_counter % 50 == 0 || NormalFrameWidth == false)){
             VERBOSE_PRINT("Found a better direction, turning %f deg\n",bestDirection);
             int bestdir = (int) bestDirection;
             increase_nav_heading(&nav_heading, bestdir);
@@ -81,32 +85,26 @@ void controller_periodic() {
             nav_set_heading_towards_waypoint(WP_GOAL);
         }
         VERBOSE_PRINT("\n");
+        NormalFrameWidth=true;
     } else{
         VERBOSE_PRINT("Pause for a little\n");
+
+        // set waypoints to current horizontal poisiton
         waypoint_set_here_2d(WP_GOAL);
         waypoint_set_here_2d(WP_TRAJECTORY);
-        //bestDirection = findBestDirection(false);
 
+
+        // increase the heading
         increase_nav_heading(&nav_heading, incrementForAvoidance);
-        /*// Limits on the max yaw
-        if(bestDirection>15.0){
-            bestDirection = 15.0;
-        } else if(bestDirection<-15.0){
-            bestDirection = -15.0;
-        }
 
-        if(abs(bestDirection)>1.0){
-            increase_nav_heading(&nav_heading, bestDirection);
-        } else {
-            increase_nav_heading(&nav_heading, incrementForAvoidance);
-        }*/
+        // the total heading change
+        total_incrementForAvoidance += incrementForAvoidance;
+        VERBOSE_PRINT("TOTAL INCREMENT FOR AVOIDANde %f",total_incrementForAvoidance);
 
-/*        if(trajectoryConfidence > 5){
-            trajectoryConfidence -= 4;
+        if (total_incrementForAvoidance>180){
+            NormalFrameWidth = false;
+
         }
-        else{
-            trajectoryConfidence = 1;
-        }*/
     }
     return;
 }

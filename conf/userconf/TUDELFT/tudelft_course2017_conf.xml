@@ -10,4 +10,4 @@
    settings_modules="modules/video_rtp_stream.xml modules/ground_follower.xml modules/air_data.xml modules/geo_mag.xml modules/ins_extended.xml modules/ahrs_int_cmpl_quat.xml modules/nav_basic_rotorcraft.xml modules/guidance_rotorcraft.xml modules/gps.xml modules/imu_common.xml"
    gui_color="white"
   />
-</conf> <!-- Comment -->
+</conf>

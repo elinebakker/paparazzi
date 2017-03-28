@@ -28,7 +28,7 @@ extern uint8_t orange_avoider_safeToGoForwards;
 
 extern void ground_follower_init(void);
 
-extern bool checkIfSafeToGoForwards(void);
+extern bool checkIfSafeToGoForwards(bool);
 
 extern struct image_t *calculateOptionMatrix(struct image_t *input_img);
 

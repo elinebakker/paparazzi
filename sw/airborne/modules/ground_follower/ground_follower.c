@@ -43,7 +43,7 @@ uint8_t color_cr_max = 0;
 
 
 // Configuration vars
-float conf_vision_init_y = 0.95;
+float conf_vision_init_y = 0.94;
 float conf_vision_init_u = 0.96;
 float conf_vision_init_v = 0.96;
 
@@ -58,7 +58,7 @@ int conf_vision_fuzzy_ramp_y = 5;
 int conf_vision_fuzzy_ramp_u = 5;
 int conf_vision_fuzzy_ramp_v = 5;
 
-float conf_vision_safeToGoForwards_threshold = 0.85; // As a percentage
+float conf_vision_safeToGoForwards_threshold = 0.80; // As a percentage
 
 // Variables required for control
 uint8_t performGroundScan = 0;
@@ -66,8 +66,16 @@ uint8_t orange_avoider_safeToGoForwards        = false;
 
 float optionMatrix[240][520]; // The values in this matrix should be the sum of the number of pixels which are found to be 'ground' in the rectangle cornered by the x,y position and the top left corner.
 
-bool checkIfSafeToGoForwards() {
-    orange_avoider_safeToGoForwards = findPercentageGround(0, 130, 120, 400) > conf_vision_safeToGoForwards_threshold;
+bool checkIfSafeToGoForwards(bool NormalFrameWidth) {
+    if(NormalFrameWidth){
+        orange_avoider_safeToGoForwards = findPercentageGround(0, 130, 130, 390) > conf_vision_safeToGoForwards_threshold;
+
+    }
+    else{
+        orange_avoider_safeToGoForwards = findPercentageGround(0, 130, 190, 330) > conf_vision_safeToGoForwards_threshold;
+    }
+
+
     return orange_avoider_safeToGoForwards;
 }
 
@@ -153,11 +161,17 @@ float findBestDirection(bool flying) {
     }
 */
 
-
+#include "state.h"
+#include "boards/bebop.h"
 
 
 struct image_t *calculateOptionMatrix(struct image_t *input_img)
 {
+    struct FloatEulers* current_eulerAngles = stateGetNedToBodyEulers_f();
+    mt9f002.offset_x = 1700 - current_eulerAngles->theta * 150;
+    printf("Desired offset_x: %d\n", mt9f002.offset_x);
+    mt9f002_update_resolution(&mt9f002);
+
     if(performGroundScan) {
         // This part resets the window for panning
         isp_request_statistics_yuv_window( MT9F002_INITIAL_OFFSET_X-500, MT9F002_INITIAL_OFFSET_X + MT9F002_SENSOR_WIDTH, MT9F002_INITIAL_OFFSET_Y, MT9F002_INITIAL_OFFSET_Y + MT9F002_SENSOR_HEIGHT, 0, 0);
@@ -231,7 +245,8 @@ struct image_t *calculateOptionMatrix(struct image_t *input_img)
     }
 
     // Draw boxes
-    drawRectangle(input_img,0, 130, 120, 400); // Safe to go forward
+    drawRectangle(input_img,0, 130, 130, 390); // Safe to go forward
+    drawRectangle(input_img,0, 130, 190, 330);
     drawRectangle(input_img,0, 239, 150, 370); // Speed
     drawRectangle(input_img, 0, 192, 243, 277); // Middle step of directionFinder.
 
