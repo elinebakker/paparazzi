@@ -1,6 +1,6 @@
 <!DOCTYPE flight_plan SYSTEM "../flight_plan.dtd">
 
-<flight_plan alt="1.0" ground_alt="0" lat0="51.9906224" lon0="4.3767678" max_dist_from_home="8" name="AE4317 - Group 02 - Bebop  TU Delft Cyberzoo" security_height="0.4">
+<flight_plan alt="1.0" ground_alt="0.0" lat0="51.9906224" lon0="4.3767678" max_dist_from_home="8" name="AE4317 - Group 02 - Bebop  TU Delft Cyberzoo" security_height="0.4">
     <header>
         #include "subsystems/datalink/datalink.h"
         #include "subsystems/electrical.h"
@@ -9,8 +9,6 @@
     </header>
     <waypoints>
         <waypoint lat="51.990631" lon="4.376796" name="HOME"/>
-        <waypoint name="North" x="0.9" y="1.0"/>
-        <waypoint name="South" x="2.9" y ="1.0"/>
         <waypoint name="CLIMB" x="1.9" y="1.0"/>
         <waypoint name="STDBY" x="1.9" y="1.0"/>
         <waypoint name="TD" x="0.8" y="-1.7"/>
@@ -107,15 +105,6 @@
         <block key="s" name="Standby" strip_button="Standby" strip_icon="home.png">
             <call_once fun="NavSetWaypointHere(WP_STDBY)"/>
             <stay wp="STDBY"/>
-        </block>
-        <block name="FlyLine" strip_button="Fly a straight line">
-                <go wp="North" />
-                <go wp="South" />
-                <stay wp="South"/>
-        </block>
-        <block name="Scan" strip_button="Scan">
-            <call_once fun="perform_scan(10)" />
-            <deroute block="Standby"/>
         </block>
         <block key="g" name="START" strip_button="Go" strip_icon="lookfore.png">
             <call_once fun="NavSetWaypointHere(WP_GOAL)"/>

@@ -13,15 +13,10 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "firmwares/rotorcraft/navigation.h"
 
+#include "firmwares/rotorcraft/navigation.h"
 #include "generated/flight_plan.h"
 #include "subsystems/datalink/telemetry.h"
-//#include "modules/computer_vision/colorfilter.h"
-//#include "modules/controller/controller.h"
-
-/* Include Vision Modules*/
-//#include "modules/orange_avoider/orange_avoider.c"
 
 // Define verbose mode which will write messages to the telemetry when activated.
 #define CONTROLLER_VERBOSE true
@@ -35,34 +30,40 @@
 
 // Define initial variables
 uint8_t safeToGoForwards        = false;
-float incrementForAvoidance     = 10.0;
+float incrementForAvoidance     = 10.0; // Amount of degrees the drone should turn when stuck
 uint16_t trajectoryConfidence   = 1;
-float maxDistance               = 2;
+float maxDistance               = 2; // Max distance the GOAL waypoint is placed ahead (in meters)
+uint8_t looping_counter         = 0;
+static bool NormalFrameWidth    = true;
 
 void controller_init() {
     VERBOSE_PRINT("Controller initialized.\n");
 }
-uint8_t looping_counter = 0;
 
 /*
  * Function that calls a vision module to check if it is safe to move forwards, and then moves a waypoint forward or changes the heading
  */
 void controller_periodic() {
 
+    // The looping counter counts the number of calls to controller_periodic.
     looping_counter+=1;
     VERBOSE_PRINT("--------------------------------------------------\n");
     float bestDirection;
     float moveDistance;
     static float total_incrementForAvoidance;
-    static bool NormalFrameWidth = true;
+
+
+    // Check the vision module whether it is safe to go forwards
     safeToGoForwards = checkIfSafeToGoForwards(NormalFrameWidth);
+
     if(safeToGoForwards){
+        // Find the best direction
         bestDirection = findBestDirection(true);
         VERBOSE_PRINT("The best direction is: %f\n", bestDirection);
         total_incrementForAvoidance= 0.0;
+        moveDistance = 0.5;
 
         // Limits on the max yaw
-        moveDistance = 0.5;
         if(bestDirection>15.0){
             bestDirection = 15.0;
             moveDistance = 0.0;
@@ -70,29 +71,47 @@ void controller_periodic() {
             bestDirection = -15.0;
             moveDistance = 0.0;
         }
+
+        // Only consider changing direction every 50 iterations (prefent jitter)
+        // Exception when the drone is stuck
         if(abs(bestDirection)>1.0 && (looping_counter % 50 == 0 || NormalFrameWidth == false)){
+            // Change heading
             VERBOSE_PRINT("Found a better direction, turning %f deg\n",bestDirection);
             int bestdir = (int) bestDirection;
+
+            // Immediately start turning the drone
             increase_nav_heading(&nav_heading, bestdir);
+
+            // Move the waypoints GOAL and TRAJECTORY in this new direction
             moveWaypointForward(WP_GOAL, moveDistance, bestdir);
             moveWaypointForward(WP_TRAJECTORY, 1.25 * moveDistance, bestdir);
+
+            // Set heading towards the GOAL waypoint
             nav_set_heading_towards_waypoint(WP_GOAL);
         } else {
+            // If we are not turning, just move the waypoint forward
+
+            // Estimate how fast we can move forward based on the DetermineTrajectoryConfidence() function of the vision
+            // This calculation returns an value between 0.1 and 2.
             moveDistance = fmax(fmin(maxDistance, 10 * DetermineTrajectoryConfidence() - 8),0.1);
             VERBOSE_PRINT("Forward\n");
+
+            // Move the waypoints GOAL and TRAJECTORY
             moveWaypointForward(WP_GOAL, moveDistance, 0.0);
             moveWaypointForward(WP_TRAJECTORY, 1.25 * moveDistance, 0.0);
+
+            // Set the heading towards the GOAL waypoint
             nav_set_heading_towards_waypoint(WP_GOAL);
         }
         VERBOSE_PRINT("\n");
         NormalFrameWidth=true;
     } else{
+        // When it is not safe to move forward
         VERBOSE_PRINT("Pause for a little\n");
 
         // set waypoints to current horizontal poisiton
         waypoint_set_here_2d(WP_GOAL);
         waypoint_set_here_2d(WP_TRAJECTORY);
-
 
         // increase the heading
         increase_nav_heading(&nav_heading, incrementForAvoidance);
@@ -102,8 +121,9 @@ void controller_periodic() {
         VERBOSE_PRINT("TOTAL INCREMENT FOR AVOIDANde %f",total_incrementForAvoidance);
 
         if (total_incrementForAvoidance>20){
+            // Apparently the drone is stuck (it has turned more than 20 degrees without finding a good direction)
+            // Therefore we start looking at a smaller region to consider whether it is safe to move forwards.
             NormalFrameWidth = false;
-
         }
     }
     return;
@@ -120,18 +140,6 @@ uint8_t increase_nav_heading(int32_t *heading, float incrementDegrees)
     INT32_ANGLE_NORMALIZE(newHeading); // HEADING HAS INT32_ANGLE_FRAC....
     *heading = newHeading;
     //VERBOSE_PRINT("Increasing heading to %f\n", ANGLE_FLOAT_OF_BFP(*heading) * 180 / M_PI);
-    return false;
-}
-
-/*
- * Perform a 360 degree spin. Assumes heading is an INT32_ANGLE. It is bound in this function.
- */
-uint8_t perform_scan(int degree)
-{
-    increase_nav_heading(&nav_heading,degree);
-/*    for(int angle;angle<=180;angle +=5) {
-        increase_nav_heading(&nav_heading, angle);
-    }*/
     return false;
 }
 
@@ -172,4 +180,3 @@ uint8_t moveWaypointForward(uint8_t waypoint, float distanceMeters, float angle)
     moveWaypoint(waypoint, &new_coor);
     return false;
 }
-
